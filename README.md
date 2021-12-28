@@ -11,11 +11,13 @@
 
 # Introduction
 
-![point_cloud_sample](./assets/PC_sample.png)
+<p align="left">
+  <img src="assets/PC_sample.png" width="100%">
+</p>
 
-
-
-![output_sample](./assets/output_sample.png)
+<p align="left">
+  <img src="assets/output_sample.png" width="100%">
+</p>
 
 This repo introduces an open and scalable aerial synthetic data generation workflow **TOPO-DataGen**. It takes common *geo-data* as inputs and outputs diverse synthetic visual data such as *2D image-3D geometry-semantics-camera pose*. The rendering engine is developed upon [**CesiumJS**](https://cesium.com/platform/cesiumjs/).
 
