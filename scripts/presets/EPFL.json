@@ -1,0 +1,9 @@
+{
+  "nbImages":15000,
+  "lonRange":[6.561020,6.577407],
+  "latRange":[46.518102,46.521380],
+  "hRange":[500,600],
+  "yawRange":[0,360],
+  "pitchRange":[-90,-30],
+  "rollRange":[-15,15]
+}

@@ -1,0 +1,12 @@
+{
+  "nbSeq":2,
+  "seqLen":50,
+  "lonRange":[6.146512,6.151228],
+  "latRange":[46.200211,46.202720],
+  "hRange":[600,700],
+  "yawRange":[0,360],
+  "pitchRange":[-90,-60],
+  "rollRange":[-15,15],
+  "maxTransVel":[30,30,5],
+  "maxRotVel":[5,2,1]
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Use correct character set. -->
+        <meta charset="utf-8">
+        <!-- Tell IE to use the latest, best version. -->
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <!-- Make the app on mobile take up the full browser screen and disable user scaling. -->
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <title>topo-datagen-testmap</title>
+        <!-- The Cesium library. -->
+        <script src="https://cesium.com/downloads/cesiumjs/releases/1.86.1/Build/Cesium/Cesium.js"></script>
+        <link href="https://cesium.com/downloads/cesiumjs/releases/1.86.1/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+        <!-- Style our app. -->
+        <link rel="stylesheet" href="index.css" media="screen">
+        <!-- The nd4js library. -->
+        <script src="source/nd.min.js"></script>
+        <script src="source/npyjs.js"></script>
+    </head>
+    <body>
+        <!-- A container for the Cesium Viewer to live in. -->
+        <div id="cesiumContainer"></div>
+
+        <script src="source/testmap.js"></script>
+
+    </body>
+</html>

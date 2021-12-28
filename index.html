@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Use correct character set. -->
+        <meta charset="utf-8">
+        <!-- Tell IE to use the latest, best version. -->
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <!-- Make the app on mobile take up the full browser screen and disable user scaling. -->
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <title>topo-datagen</title>
+        <!-- The Cesium library. -->
+        <script src="https://cesium.com/downloads/cesiumjs/releases/1.86.1/Build/Cesium/Cesium.js"></script>
+        <link href="https://cesium.com/downloads/cesiumjs/releases/1.86.1/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+        <!-- Style our app. -->
+        <link rel="stylesheet" href="index.css" media="screen">
+        <!-- The nd4js library. -->
+        <script src="source/nd.min.js"></script>
+        <script src="source/npyjs.js"></script>
+    </head>
+    <body>
+        <div id="container">
+            <div id="cesiumContainer"></div>
+            <img src="assets/exit.ico" id="exitimg">
+            <div class="infodiv" id="htmlconsole"></div>
+            <div class="infodiv" id="timediv">Elapsed time: <span id="elapsedtimespan">Unknown</span> min | Remaining estimated time: <span id="remainingtimespan">Unknown</span> min</div>
+            <div class="center" id="pausediv">PAUSE</div>
+            <div class="center" id="finishdiv">FINISHED</div>
+        </div>
+        <script src="source/app.js"></script>
+    </body>
+</html>

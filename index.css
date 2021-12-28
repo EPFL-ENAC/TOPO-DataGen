@@ -1,0 +1,59 @@
+.cesium-viewer-bottom,.cesium-viewer-animationContainer,.cesium-viewer-toolbar,.cesium-viewer-timelineContainer,.cesium-viewer-fullscreenContainer {
+    display: none !important;
+} 
+
+html, body, #cesiumContainer {
+    width: 100vw; /*For cesiumContainer, this is overwritten in App.js */
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+    background: #000;
+}
+
+#container {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+
+#exitimg {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 25px;
+    height: 25px;
+}
+#exitimg:hover {
+    cursor: pointer;
+}
+
+.center {
+    position: relative;
+    margin: -50% auto;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+    padding: 0px 15px;
+}
+
+#pausediv {
+    background-color: black;
+    color: white;
+    display: none;
+}
+
+#finishdiv {
+    background-color: green;
+    color: white;
+    display: none;
+}
+
+.infodiv {
+    color: white;
+    margin: 20px 10px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+}

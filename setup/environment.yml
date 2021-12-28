@@ -1,0 +1,33 @@
+name: topo-datagen
+
+channels:
+- conda-forge
+- open3d-admin
+
+dependencies:
+  - python=3.7
+  - pip
+  - pdal
+  - python-pdal
+  - gdal
+  - entwine
+  - opencv
+  - open3d
+  - pip:
+      - pydoe
+      - numpy
+      - scipy
+      - pyproj
+      - tqdm
+      - rasterio
+      - progressbar
+      - jpype1
+      - laspy
+      - wget
+      - pandas
+      - matplotlib
+      - jupyterlab
+      - scikit-image
+      - torch
+      - pynvml
+

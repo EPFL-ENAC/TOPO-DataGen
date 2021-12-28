@@ -1,0 +1,10 @@
+{
+  "nbImages":30000,
+  "lonRange":[7.065,7.077],
+  "latRange":[46.3705,46.3825],
+  "hRange":[100,200],
+  "yawRange":[0,360],
+  "pitchRange":[-90,-45],
+  "rollRange":[-15,15],
+  "heightRef": "PROJ_DIR/data_preprocess/comballaz/comballaz-surface3d-raster/mergedTIF-lv95-wgs84.tif"
+}
