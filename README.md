@@ -118,7 +118,9 @@ Other helper scripts like `npy_to_txt_pointcloud.py`, `plot_depth_images.py`, `p
 
 # General Data Flow
 
-<img src="./assets/dataflow.png" alt="dataflow" style="zoom:100%;" />
+<p align="left">
+  <img src="assets/dataflow.png" width="100%">
+</p>
 
 Please note that many other 2D/3D data could be generated based on the raw data output, for example:
 
