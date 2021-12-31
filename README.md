@@ -12,6 +12,11 @@
 # Introduction
 
 <p align="left">
+  <img src="assets/pull_figure.png" width="75%">
+</p>
+
+
+<p align="left">
   <img src="assets/PC_sample.png" width="100%">
 </p>
 
