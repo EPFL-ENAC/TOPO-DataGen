@@ -11,16 +11,16 @@
 
 # Introduction
 
-<p align="left">
+<p align="center">
   <img src="assets/pull_figure.png" width="75%">
 </p>
 
-
-<p align="left">
+<p align="center">
   <img src="assets/PC_sample.png" width="100%">
 </p>
 
-<p align="left">
+
+<p align="center">
   <img src="assets/output_sample.png" width="100%">
 </p>
 
