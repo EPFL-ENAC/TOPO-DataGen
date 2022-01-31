@@ -171,6 +171,12 @@ def main():
     print("Reprojection error statistics: mean: {:.2f} px, std: {:.2f} px, median: {:.2f} px, max: {:.2f} px".
           format(np.mean(reproj_error_ls), np.std(reproj_error_ls),
                  np.median(reproj_error_ls), np.max(reproj_error_ls)))
+    out_path = os.path.join(args.label_path, 'npy_statistics.npz')
+    np.savez(out_path,
+             valid_rate=np.array(valid_rate_ls),
+             reproj_error=np.array(reproj_error_ls),
+             file_name=file_ls)
+    print("Overall statistics is saved to {:s}".format(out_path))
 
     if len(dubious_data_ls):
         out_path = os.path.join(args.label_path, 'dubious_data.txt')
