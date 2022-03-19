@@ -48,7 +48,7 @@ Last update: 12.28.2021
 
 
 
-The TOPO-DataGen workflow is officially presented in the paper
+The TOPO-DataGen workflow is officially presented in the paper accepted to CVPR 2022
 <br>
 **CrossLoc: Scalable Aerial Localization Assisted by Multimodal Synthetic Data**
 <br>
@@ -56,7 +56,7 @@ The TOPO-DataGen workflow is officially presented in the paper
 <br>
 École Polytechnique Fédérale de Lausanne (EPFL)
 <br>
-Links: **[arXiv](https://arxiv.org/abs/2112.09081) | [code repos](https://github.com/TOPO-EPFL/CrossLoc)**
+Links: **[website](https://crossloc.github.io/) | [arXiv](https://arxiv.org/abs/2112.09081) | [code repos](https://github.com/TOPO-EPFL/CrossLoc)** 
 
 # Get Started
 
