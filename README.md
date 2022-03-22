@@ -56,7 +56,7 @@ The TOPO-DataGen workflow is officially presented in the paper accepted to CVPR 
 <br>
 École Polytechnique Fédérale de Lausanne (EPFL)
 <br>
-Links: **[website](https://crossloc.github.io/) | [arXiv](https://arxiv.org/abs/2112.09081) | [code repos](https://github.com/TOPO-EPFL/CrossLoc)** 
+Links: **[website](https://crossloc.github.io/) | [arXiv](https://arxiv.org/abs/2112.09081) | [code repos](https://github.com/TOPO-EPFL/CrossLoc) | [datasets](https://doi.org/10.5061/dryad.mgqnk991c)** 
 
 # Get Started
 
