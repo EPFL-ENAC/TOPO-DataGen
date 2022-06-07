@@ -14,7 +14,7 @@ def config_parser():
         description='Semantic label sampling script.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--label_path', type=str, default=None, required=True,
+    parser.add_argument('--label_path', type=str, default='/home/vnav/oneTB/shanci/Cesium/Echendens/Echendens-LHS',
                         help='Directory where the point cloud npy files are in.')
 
     parser.add_argument('--threshold', type=float, default=50.0,
@@ -113,6 +113,7 @@ def main():
     xyz_min = np.array([float('inf'), float('inf'), float('inf')])
     xyz_max = np.array([-float('inf'), -float('inf'), -float('inf')])
     reproj_error_ls = []
+    error_file_ls =[]
 
     cam_mat = get_cam_mat(720, 480, 480)
 
@@ -152,6 +153,10 @@ def main():
         reproj_error = np.linalg.norm(pixel_coords - pixel_grid, axis=0)  # [H*W]
         reproj_error = reproj_error.reshape(480, 720)[mask_has_data]  # [H*W]
         reproj_error_ls.append(np.mean(reproj_error))
+        mean_err = np.mean(reproj_error)
+        if mean_err > 5:
+            print(npy_file + '  error: {}'.format(mean_err))
+            error_file_ls.append(npy_file)
 
         # check non-empty pixel rate
         valid_rate = np.sum(this_pc[:, :, 0] != -1) / (this_pc.shape[0] * this_pc.shape[1])
@@ -176,6 +181,7 @@ def main():
              valid_rate=np.array(valid_rate_ls),
              reproj_error=np.array(reproj_error_ls),
              file_name=file_ls)
+    np.save(out_path, error_file_ls)
     print("Overall statistics is saved to {:s}".format(out_path))
 
     if len(dubious_data_ls):

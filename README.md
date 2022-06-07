@@ -48,7 +48,7 @@ Last update: 12.28.2021
 
 
 
-The TOPO-DataGen workflow is officially presented in the paper accepted to CVPR 2022
+The TOPO-DataGen workflow is officially presented in the paper
 <br>
 **CrossLoc: Scalable Aerial Localization Assisted by Multimodal Synthetic Data**
 <br>
@@ -56,7 +56,7 @@ The TOPO-DataGen workflow is officially presented in the paper accepted to CVPR 
 <br>
 École Polytechnique Fédérale de Lausanne (EPFL)
 <br>
-Links: **[website](https://crossloc.github.io/) | [arXiv](https://arxiv.org/abs/2112.09081) | [code repos](https://github.com/TOPO-EPFL/CrossLoc) | [datasets](https://doi.org/10.5061/dryad.mgqnk991c)** 
+Links: **[arXiv](https://arxiv.org/abs/2112.09081) | [code repos](https://github.com/TOPO-EPFL/CrossLoc)**
 
 # Get Started
 
@@ -81,13 +81,31 @@ Please refer to [`data_preprocess/notes.md`](data_preprocess/notes.md) for data 
 
 Please note that there is no strictly standardized data preprocessing steps, and it is out of the scope of this repo.
 
+**Configuration of data generation:**
+
+1. LHS synthetic data generation
+
+    Configure the sampling boundary in `script/presets/sence_name.json`. The configuration parameter is of great significance for the following redering of synthetic images. Please make sure the height is about 100~200 meters above the ground of the area.
+
+
+2. Matched synthetic image with given camera pose from real data collected by the DJI drone
+    
+    ```bash
+    export OUT_DIR=$HOME/Documents/Cesium
+    python scripts/start_generate.py scene-matching scene -matchPhantom Path_to_real_images -cesiumhome $OUT_DIR
+    # The -matchPhantom argument will call exiftool to automatically extract the meta data including 
+    # camera poses and orientation of the images into a .csv file and start generating the matching synthetic image.
+   ```
+
+
 **Start data generation:**
 
 To initiate the `demo` data rendering, simply run:
 
 ```bash
+export scene=demo
 export OUT_DIR=$HOME/Documents/Cesium
-python scripts/start_generate.py demo-LHS demo -p scripts/presets/demo.json -cesiumhome $OUT_DIR 
+python scripts/start_generate.py $scene-LHS scene -p scripts/presets/$scene.json -cesiumhome $OUT_DIR 
 ```
 
 After the rendering is finished, we suggest running the helper scripts to clean the data and do some simple sanity check as follows:
@@ -101,6 +119,15 @@ python scripts/remove_outliers.py --input_path $OUT_DIR/demo-LHS --las_path $LAS
 
 python scripts/tools/scan_npy_pointcloud.py --label_path $OUT_DIR/demo-LHS --threshold 25
 ```
+
+**Necessary sanity check:**
+
+With the scan_npy_pointcloud.py, you can see the synthetic image with reprojection error above 5 pixels. This may be caused by the fluctuation of the data steaming from the Ceisum Ion sever or local file loading issue. We suggest that you can delete the image and its scene coordinate file with high reprojection error and run:
+```bash
+python scripts/start_generate.py $scene-LHS scene -cesiumhome $OUT_DIR 
+```
+
+to generate the image again until all the images look good and pass scan_npy_pointcloud check. Here we also suggest to implement manually check to avoid bug image which is entire black.
 
 **Retrieve semantics:**
 

@@ -5,7 +5,10 @@ This README introduces the pipeline to preprocess [**swisstopo** free geodata](h
 
 ## 0. Download raw data
 ```bash
-# we provide selected download links for an area of interest
+# Please first go through the swisstopo free geodata website
+# Locate your target area in the swisstopo free geodata website and download the csv file from the webpage to data_preprocess folder
+# We recommand to paddle the target area when you choose by rectangle, e.g. if you are interested in a 3*3 area then choose 5*5 blocks centered on it.
+# we provide selected download scripts for an area of interest with given csv file
 export DATASET=demo
 python helper_download_from_csv.py $DATASET
 ```
@@ -46,7 +49,24 @@ export DATASET=demo
 bash helper_pointCloud_colorize.sh $DATASET
 ```
 
-## 4. Things to know about swisstopo data
+## 4.Cesium Ion streaming configuration
+1. Create a Cesium Ion accout and enter **My Assets** page
+2. Zip and upload the following asset respectively:  
+    (1)`$DATASET/demo-surface3d/ecef` folder  
+    
+    (2)`$DATASET/demo-surface3d-raster/mergedTIF-wgs84.tif`
+
+    note: When uploading this file, select the kind as **raster terrain** and choose base terrain as **Cesium World Terrain**.
+    
+3. Adjust the location of the 3D tile asset with '*-ecef.zip' source file.
+   1. Click the **Adjust Tileset Location** button on the right top preview window of the 3D tile asset.
+   2. Click the **Global Settings** on the top left
+   3. Select the Terrain as '*-mergedTIF-wgs84' we uploaded and click 'Back to Assets' to save the changes.
+4. Copy the `asset_id` and `access_token` of the 3D tile asset with '*-ecef.zip' source file. The token can be accessed via **Access Token** besides 'My Assets' tab. 
+5. change the `asset_id` and `access_token` in `../source/app.js`
+
+
+## 5. Things to know about swisstopo data
 
 * Swiss coordinate system
   * typically we have raw data in **planimetric** `lv95` and **altimetric** ` ln02` systems ([local swiss reference frames](https://www.swisstopo.admin.ch/en/knowledge-facts/surveying-geodesy/reference-frames/local.html)), and we would stick with the standard `wgs84` ellipsoid (`epsg:4326`).

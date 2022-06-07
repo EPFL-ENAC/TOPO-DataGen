@@ -43,7 +43,7 @@ echo "----- Start to enter docker environment for terrain tiling -----"
 SH_STR='rm -rf terrain-tiles
 mkdir terrain-tiles
 ctb-tile -f Mesh -C -N -o terrain-tiles mergedTIF-wgs84.tif
-ctb-tile -l -f Mesh -C -o terrain-tiles mergedTIF-wgs84.tif
+ctb-tile -c 1 -l -f Mesh -C -o terrain-tiles mergedTIF-wgs84.tif
 exit'
 echo "$SH_STR" > util_terrain_preprocess.sh
 
