@@ -13,3 +13,17 @@ data_preprocess/*/terrain-tiles
 data_preprocess/*/pointCloud-tiles
 data_preprocess/*/tilesets
 scripts/presets/demo*/
+
+# PyCharm Settings
+.idea
+
+# VSCode Settings
+.vscode
+
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+doc/build
