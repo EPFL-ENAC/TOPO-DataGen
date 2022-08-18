@@ -1,23 +1,31 @@
 # swisstopo dataset preprocessing for Cesium
 
 This README introduces the pipeline to preprocess [**swisstopo** free geodata](https://shop.swisstopo.admin.ch/en/products/free_geodata) for use in [**CesiumJS**](https://cesium.com/platform/cesiumjs/). The swisstopo terms of use could be found [here](https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html).
-
+  1. Please first go through the swisstopo free geodata website and refer to **General Data Flow** in [`**README.md**`](../README.md):
+      + [swissSURFACE3D](https://www.swisstopo.admin.ch/en/geodata/height/surface3d.html):  
+          **Lidar Point Clouds:** models all natural and man-made objects of the surface of Switzerland in the form of a classified point cloud.
+      + [swissSURFACE3D Raster](https://www.swisstopo.admin.ch/en/geodata/height/surface3d-raster.html):  
+          **DTMs:** a digital surface model (DSM) which represents the earth’s surface including visible and permanent landscape elements
+      + [SWISSIMAGE 10 cm](https://www.swisstopo.admin.ch/en/geodata/images/ortho/swissimage10.html):  
+          **Orthophotos:** a composition of new digital color aerial photographs over the whole of Switzerland with a ground resolution of 10 cm
+  2. Build the folder with scene name under the data_preprocess folder, e.g. `./data_preprocess/scene_name`
+  3. Locate your target area in the above three links and download the csv file from the webpage to `./data_preprocess/scene_name` folder. 
+     We recommand to paddle the target area when you choose by rectangle, e.g. if you are interested in a 3 \* 3 area then choose 5 \* 5 blocks centered on it.  
+     Operations: Selection mode: select by rectangles -> click *New rectangle buttun* -> choose the area of interest in the map 
+     -> keep default options and click *search* -> click *export all links* -> click *File ready. Click here to download* -> save to `./data_preprocess/scene_name`
+  4. Run the scripts below to download the files and generate the local geodata.
 
 ## 0. Download raw data
 ```bash
-# Please first go through the swisstopo free geodata website
-# Locate your target area in the swisstopo free geodata website and download the csv file from the webpage to data_preprocess folder
-# We recommand to paddle the target area when you choose by rectangle, e.g. if you are interested in a 3*3 area then choose 5*5 blocks centered on it.
-# we provide selected download scripts for an area of interest with given csv file
+cd data_preprocess
 export DATASET=demo
 python helper_download_from_csv.py $DATASET
 ```
 
 ## 1. Terrain tiles preprocessing
+we process the downloaded .tif surface models and do tiling in quantized-mesh format
 
 ```bash
-# we process the downloaded .tif surface models and do tiling in quantized-mesh format
-export DATASET=demo
 bash helper_terrain_preprocess.sh $DATASET
 ```
 
@@ -27,43 +35,47 @@ Note: it helps debug but is **not a must** during preprocessing.
 
 ```bash
 # serve the local tiles for Cesium usage. $PORT number must be consistent with Cesium app.js
-export DATASET=demo
 export PORT=3000
 bash helper_terrain_serve.sh $DATASET $PORT
 # please check the 'install cesium terrain server' section at ../setup/install.sh in case of error
 ```
 
 ## 2. Imagery tiles preprocessing
+we process the downloaded .tif orthophotos and do tiling in TMS format
 
 ```bash
-# we process the downloaded .tif orthophotos and do tiling in TMS format
-export DATASET=demo
 bash helper_imagery_preprocess.sh $DATASET
 ```
 
 ## 3. Cesium 3D tiles preprocessing
+we process the downloaded .las point clouds and do tiling in Cesium 3D tiles format
 
 ```bash
-# we process the downloaded .las point clouds and do tiling in Cesium 3D tiles format
-export DATASET=demo
 bash helper_pointCloud_colorize.sh $DATASET
 ```
 
 ## 4.Cesium Ion streaming configuration
-1. Create a Cesium Ion accout and enter **My Assets** page
-2. Zip and upload the following asset respectively:  
-    (1)`$DATASET/demo-surface3d/ecef` folder  
+1. Create a Cesium Ion account and enter **My Assets** page
+2. Upload the following asset respectively:  
+    (1) Compress`./$DATASET/$DATASET-surface3d/ecef` folder in .zip file  
     
-    (2)`$DATASET/demo-surface3d-raster/mergedTIF-wgs84.tif`
+    (2) `./$DATASET/$DATASET-surface3d-raster/mergedTIF-wgs84.tif`
 
-    note: When uploading this file, select the kind as **raster terrain** and choose base terrain as **Cesium World Terrain**.
+    note: When uploading the .tif file, select the kind as **raster terrain** and choose base terrain as **Cesium World Terrain**.
     
 3. Adjust the location of the 3D tile asset with '*-ecef.zip' source file.
    1. Click the **Adjust Tileset Location** button on the right top preview window of the 3D tile asset.
    2. Click the **Global Settings** on the top left
    3. Select the Terrain as '*-mergedTIF-wgs84' we uploaded and click 'Back to Assets' to save the changes.
-4. Copy the `asset_id` and `access_token` of the 3D tile asset with '*-ecef.zip' source file. The token can be accessed via **Access Token** besides 'My Assets' tab. 
-5. change the `asset_id` and `access_token` in `../source/app.js`
+4. Copy the `ID` and `access_token` of the 3D tile asset with '*-ecef.zip' source file. The token can be accessed via **Access Token** besides 'My Assets' tab. 
+5. Configure the Cesium connection and rendering settings in `../source/app.js`:  
+   + Access Token: `Cesium.Ion.defaultAccessToken`  
+   + Asset_id: `url: Cesium.IonResource.fromAssetId()`  
+   + Resolution: `container.style.width = '720px'; container.style.height = '480px';`
+   + camera parameters: `var fov_deg = 73.74;`
+
+**Warning**: If you use other Ceisum 3D tiles data source instead of the Swisstopo Free Geodata and the model is already calibrated 
+in wgs84 coordinate system and finished the Swisstopo Free Geodata preprocess, please comment line 358 to line 363 in `../source/app.js`**!!!** Otherwise, the local file will overlap with the server file you upload!
 
 
 ## 5. Things to know about swisstopo data

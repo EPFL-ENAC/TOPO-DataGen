@@ -155,8 +155,12 @@ def main():
         reproj_error_ls.append(np.mean(reproj_error))
         mean_err = np.mean(reproj_error)
         if mean_err > 5:
-            print(npy_file + '  error: {}'.format(mean_err))
             error_file_ls.append(npy_file)
+            img_path = '_'.join(npy_file.split('_')[:-1]) + '_img.png'
+            npy_path = '_'.join(npy_file.split('_')[:-1]) + '_pc.npy'
+            os.remove(img_path)
+            os.remove(npy_path)
+            print('Delete ' + npy_file + '  error: {}'.format(mean_err))
 
         # check non-empty pixel rate
         valid_rate = np.sum(this_pc[:, :, 0] != -1) / (this_pc.shape[0] * this_pc.shape[1])

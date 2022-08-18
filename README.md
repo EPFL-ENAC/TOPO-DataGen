@@ -24,7 +24,9 @@
   <img src="assets/output_sample.png" width="100%">
 </p>
 
-This repo introduces an open and scalable aerial synthetic data generation workflow **TOPO-DataGen**. It takes common *geo-data* as inputs and outputs diverse synthetic visual data such as *2D image-3D geometry-semantics-camera pose*. The rendering engine is developed upon [**CesiumJS**](https://cesium.com/platform/cesiumjs/).
+This repo introduces an open and scalable aerial synthetic data generation workflow **TOPO-DataGen**. It takes common 
+*geo-data* as inputs and outputs diverse synthetic visual data such as *2D image-3D geometry-semantics-camera pose*. 
+The rendering engine is developed upon [**CesiumJS**](https://cesium.com/platform/cesiumjs/).
 
 Supported input formats:
 
@@ -52,7 +54,9 @@ The TOPO-DataGen workflow is officially presented in the paper
 <br>
 **CrossLoc: Scalable Aerial Localization Assisted by Multimodal Synthetic Data**
 <br>
-[Qi Yan](https://qiyan98.github.io/), [Jianhao Zheng](https://jianhao-zheng.github.io/), [Simon Reding](https://people.epfl.ch/simon.reding/?lang=en), [Shanci Li](https://people.epfl.ch/shanci.li/?lang=en), [Iordan Doytchinov](https://people.epfl.ch/iordan.doytchinov?lang=en) 
+[Qi Yan](https://qiyan98.github.io/), [Jianhao Zheng](https://jianhao-zheng.github.io/), 
+[Simon Reding](https://people.epfl.ch/simon.reding/?lang=en), [Shanci Li](https://people.epfl.ch/shanci.li/?lang=en), 
+[Iordan Doytchinov](https://people.epfl.ch/iordan.doytchinov?lang=en) 
 <br>
 École Polytechnique Fédérale de Lausanne (EPFL)
 <br>
@@ -77,7 +81,10 @@ Note: the `sudo` rights is needed for some Linux dependencies such as `docker` a
 
 **Data preprocessing:**
 
-Please refer to [`data_preprocess/notes.md`](data_preprocess/notes.md) for data preprocessing steps. We provide a quick `demo` dataset for you to explore and reproduce the workflow using an open-sourced geodata database. The provided `EPFL` and `comballaz` assets are respectively used to produce the `urbanscape` and `naturescape` sets in our [**CrossLoc Benchmark Datasets**](https://github.com/TOPO-EPFL/CrossLoc-Benchmark-Datasets).
+Please refer to [`data_preprocess/notes.md`](data_preprocess/notes.md) for data preprocessing steps. We provide a quick 
+`demo` dataset for you to explore and reproduce the workflow using an open-sourced geodata database. The provided `EPFL` 
+and `comballaz` assets are respectively used to produce the `urbanscape` and `naturescape` sets in our 
+[**CrossLoc Benchmark Datasets**](https://github.com/TOPO-EPFL/CrossLoc-Benchmark-Datasets).
 
 Please note that there is no strictly standardized data preprocessing steps, and it is out of the scope of this repo.
 
@@ -85,14 +92,17 @@ Please note that there is no strictly standardized data preprocessing steps, and
 
 1. LHS synthetic data generation
 
-    Configure the sampling boundary in `script/presets/sence_name.json`. The configuration parameter is of great significance for the following redering of synthetic images. Please make sure the height is about 100~200 meters above the ground of the area.
+    Configure the sampling boundary in `script/presets/sence_name.json`. The configuration parameter is of great 
+    significance for the following redering of synthetic images. Please make sure the height is about 100~200 meters 
+    above the ground of the area.
 
 
 2. Matched synthetic image with given camera pose from real data collected by the DJI drone
     
     ```bash
+    export scene=demo
     export OUT_DIR=$HOME/Documents/Cesium
-    python scripts/start_generate.py scene-matching scene -matchPhantom Path_to_real_images -cesiumhome $OUT_DIR
+    python scripts/start_generate.py $scene-matching $scene -matchPhantom Path_to_real_images -cesiumhome $OUT_DIR
     # The -matchPhantom argument will call exiftool to automatically extract the meta data including 
     # camera poses and orientation of the images into a .csv file and start generating the matching synthetic image.
    ```
@@ -105,29 +115,33 @@ To initiate the `demo` data rendering, simply run:
 ```bash
 export scene=demo
 export OUT_DIR=$HOME/Documents/Cesium
-python scripts/start_generate.py $scene-LHS scene -p scripts/presets/$scene.json -cesiumhome $OUT_DIR 
+python scripts/start_generate.py $scene-LHS $scene -p scripts/presets/$scene.json -cesiumhome $OUT_DIR 
 ```
 
-After the rendering is finished, we suggest running the helper scripts to clean the data and do some simple sanity check as follows:
+After the rendering is finished, we suggest running the helper scripts to clean the data and do some simple sanity 
+check as follows:
 
 ```bash
 # please refer to the code for detailed implementation
 # the data cleaning and sanity check are based on some intuitive rules, and they do not guarantee a perfect dataset afterwards
 
-export LAS_DIR=$(pwd)/data_preprocess/demo/demo-surface3d/ecef-downsampled  # demo data preprocessing default path
-python scripts/remove_outliers.py --input_path $OUT_DIR/demo-LHS --las_path $LAS_DIR --save_backup
+export LAS_DIR=$(pwd)/data_preprocess/$scene/****-surface3d/ecef-downsampled  # demo data preprocessing default path
+python scripts/remove_outliers.py --input_path $OUT_DIR/$scene-LHS --las_path $LAS_DIR --save_backup
 
-python scripts/tools/scan_npy_pointcloud.py --label_path $OUT_DIR/demo-LHS --threshold 25
+python scripts/tools/scan_npy_pointcloud.py --label_path $OUT_DIR/$scene-LHS --threshold 25
 ```
 
 **Necessary sanity check:**
 
-With the scan_npy_pointcloud.py, you can see the synthetic image with reprojection error above 5 pixels. This may be caused by the fluctuation of the data steaming from the Ceisum Ion sever or local file loading issue. We suggest that you can delete the image and its scene coordinate file with high reprojection error and run:
+With the scan_npy_pointcloud.py, we would delete the synthetic image with reprojection error above 5 pixels. This may be 
+caused by the fluctuation of the data steaming from the Ceisum Ion sever or local file loading issue. After that, run 
+the following script to regenerate these images again until all the images look good and pass scan_npy_pointcloud check:
+
 ```bash
 python scripts/start_generate.py $scene-LHS scene -cesiumhome $OUT_DIR 
 ```
 
-to generate the image again until all the images look good and pass scan_npy_pointcloud check. Here we also suggest to implement manually check to avoid bug image which is entire black.
+Here we also suggest to implement manually check if you have time.
 
 **Retrieve semantics:**
 
@@ -137,8 +151,8 @@ We highly recommend to first clean the data (last step) to remove the outliers o
 
 ```bash
 # CUDA device is preferred as the matrix computation could be much faster
-export SM_DIST_DIR=$OUT_DIR/demo-LHS-sm-dist
-python scripts/semantics_recovery.py --input_path $OUT_DIR/demo-LHS --las_path $LAS_DIR \
+export SM_DIST_DIR=$OUT_DIR/$scene-LHS-sm-dist
+python scripts/semantics_recovery.py --input_path $OUT_DIR/$scene-LHS --las_path $LAS_DIR \
 											  --output_path_distance $SM_DIST_DIR
 ```
 
