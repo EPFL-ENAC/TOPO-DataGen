@@ -17,6 +17,7 @@ body:
     required: false
 - type: checkboxes
   attributes:
+    label: Please, agree to the following points :
     options:
     - label: Read and agree to the [Code of Conduct](https://github.com/EPFL-ENAC/TOPO-DataGen/blob/main/CODE_OF_CONDUCT.md).
       required: true
