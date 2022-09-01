@@ -1,0 +1,29 @@
+name: 🐢 Performance
+description: Runtime, memory, speed, or storage inefficiency
+title: "[PERFORMANCE] <title>"
+labels: [performance]
+body:
+- type: textarea
+  attributes:
+    label: Description
+    description: Please describe the performance issue.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Benchmarks
+    description: How poorly does Topo-DataGen perform?
+  validations:
+    required: false
+- type: checkboxes
+  attributes:
+    options:
+    - label: Read and agree to the [Code of Conduct](https://github.com/EPFL-ENAC/TOPO-DataGen/blob/main/CODE_OF_CONDUCT.md).
+      required: true
+    - label:  If there is [already a relevant issue](https://github.com/EPFL-ENAC/TOPO-DataGen/issues), whether open or closed, comment on the existing thread instead of posting a new issue.
+      required: true
+    - label:  I have included **Runable** example so the maintainer can troubleshoot the problems you identify.
+      required: true
+    - label:  I have included **Minimal** example so the maintainer can troubleshoot the problems you identify (reduce runtime wherever possible and remove complicated details that are irrelevant to the issue at hand).
+      required: true
+
