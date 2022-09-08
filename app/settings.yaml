@@ -1,0 +1,16 @@
+POINTS_CLOUD:
+  INPUT_FOLDER_NAME: "classified_point_cloud"
+  OUTPUT_FOLDER_NAME: "classified_point_cloud_processed"
+  DOWNSAMPLE_CLASSES: [2,3] # Class of points that must be downsampled
+  VOXEL_SIZE: [1.0,2.0] # Corresponding voxel size for the downsampling
+  PIPEPLINE_PDAL_TEMPLATE_FILE_NAME: "template_colorization_pipepline.json"
+ORTHOPHOTO:
+  NO_DATA_VALUE: 0
+  INPUT_FOLDER_NAME: "orthophoto_mosaic"
+  OUTPUT_FOLDER_NAME: "orthophoto_mosaic_processed"
+  OUTPUT_FILE_NAME: "orthophoto_merged"
+DIGITAL_SURFACE_MODEL:
+  NO_DATA_VALUE: -9999
+  INPUT_FOLDER_NAME: "digital_surface_model"
+  OUTPUT_FOLDER_NAME: "digital_surface_model_processed"
+  OUTPUT_FILE_NAME: "digital_surface_model_merged"

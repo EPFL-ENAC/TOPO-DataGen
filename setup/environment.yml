@@ -30,4 +30,6 @@ dependencies:
       - scikit-image
       - torch
       - pynvml
+      - multiprocess
+      - dynaconf
 
