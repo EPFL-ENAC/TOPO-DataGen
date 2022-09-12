@@ -6,10 +6,9 @@ import pathlib
 from config import settings
 
 
-def merge_digital_surface_model(path_in_folder_digital_surface_model : typing.Union[str, pathlib.Path],
-                                path_out_file_digital_surface_model_virtual_layer : typing.Union[str, pathlib.Path],
-                                path_out_file_digital_surface_model : typing.Union[str, pathlib.Path],
-                                logger = None) -> None :
+def digital_surface_model_merging(path_in_folder_digital_surface_model : typing.Union[str, pathlib.Path],
+                                  path_out_file_digital_surface_model : typing.Union[str, pathlib.Path],
+                                  logger = None) -> None :
 
 
     list_of_digital_surface_model = [os.path.join(path_in_folder_digital_surface_model, i) for i in os.listdir(path_in_folder_digital_surface_model) if
@@ -33,6 +32,7 @@ def merge_digital_surface_model(path_in_folder_digital_surface_model : typing.Un
 
 
     command = f"gdal_merge.py -o {path_out_file_digital_surface_model} -n {no_data_value} -co COMPRESS=LZW {string_of_digital_surface_model_paths}"
+    print(command)
     os.system(command)
 
     # a_nodata {no_data_value}
@@ -49,6 +49,6 @@ if __name__ == "__main__":
     path_out_file_digital_surface_model_virtual_layer = '/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/digital_surface_model_processed/digital_surface_model_merged.vrt'
     path_out_file_digital_surface_model = '/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/digital_surface_model_processed/digital_surface_model_merged.tif'
 
-    merge_digital_surface_model(path_in_folder_digital_surface_model,
-                                path_out_file_digital_surface_model_virtual_layer,
-                                path_out_file_digital_surface_model)
+    digital_surface_model_merging(path_in_folder_digital_surface_model,
+                                  path_out_file_digital_surface_model_virtual_layer,
+                                  path_out_file_digital_surface_model)

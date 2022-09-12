@@ -3,6 +3,7 @@ This code aims to gather all functions used to process points clouds (las format
 """
 import os
 import json
+import shutil
 import pdal
 import pathlib
 import numpy as np
@@ -16,82 +17,14 @@ import open3d as o3d
 
 
 from config import settings
+from utils import files
 
 
 # Get the number of CPUs in the system.
 number_of_cpu = multiprocessing.cpu_count()
 
 
-def colorize_point_cloud(pipepline_json : str) -> None :
-    """
-    This function colorize one point cloud with a orthophoto
-    :param pipepline_json: pdal process template
-    :return: None
-    """
-    point_cloud_file_name = json.loads(pipepline_json).get('pipeline')[0]
-    pipeline = pdal.Pipeline(pipepline_json)
-    pipeline.execute()
-
-
-
-def batch_colorize_point_cloud(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
-                               path_out_folder_colorized_point_cloud : typing.Union[str, pathlib.Path],
-                               path_in_file_orthophoto : typing.Union[str, pathlib.Path],
-                               logger = None) -> None :
-    """
-    This function runs the colorisation process over all point cloud file in on folder.
-    It first define the Pdal Json pipepline and run the colorize_point_cloud() function.
-    It uses the multiprocess library to parallelize processes
-    :param path_in_folder_point_cloud: Path of the folder that contains the points to colorized.
-    :param path_out_folder_colorized_point_cloud: Path of the out folder.
-    :param path_in_file_orthophoto: Orthophoto used for the colorization.
-    :return: None
-    """
-
-    # Load pdal process template
-    pipepline_pdal_template_file_name = settings.points_cloud.pipepline_pdal_template_file_name
-    path_file_pipepline_json = os.path.join(os.path.dirname(os.path.realpath(__file__)),pipepline_pdal_template_file_name)
-    pipepline_template = json.load(open(path_file_pipepline_json))
-    list_pipepline = []
-
-    # Get the list of all las files
-    list_point_cloud_files_name = [i for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
-
-    #assert path_in_file_orthophoto.endswith('vrt'), "Orthophoto must be an GDAL Virtual Format (VRT)"
-
-    for point_cloud_files_name in list_point_cloud_files_name :
-        input_point_cloud_files_path = os.path.join(path_in_folder_point_cloud,point_cloud_files_name)
-        output_point_cloud_files_path = os.path.join(path_out_folder_colorized_point_cloud,point_cloud_files_name)
-
-        # Adapt template pipepline for the current point cloud file
-        pipepline_json = copy.deepcopy(pipepline_template)
-        pipepline_json['pipeline'].insert(0, input_point_cloud_files_path)
-        pipepline_json['pipeline'][1]['raster'] = path_in_file_orthophoto
-        pipepline_json['pipeline'][3]['filename'] = output_point_cloud_files_path
-        pipepline_json = json.dumps(pipepline_json, indent=4)
-
-        list_pipepline.append(pipepline_json)
-
-
-    if logger:
-        message = f"The point cloud  {path_in_folder_point_cloud} colorization process has started"
-        logger.info(message)
-        start = datetime.now()
-
-    pool = Pool(number_of_cpu)
-    pool.map(colorize_point_cloud, list_pipepline)
-    pool.close()
-    pool.join()
-
-    if logger:
-        processing_time = (datetime.now() - start).seconds
-        message = f"The  point cloud  {path_in_folder_point_cloud} merging process has finished in {processing_time} seconds"
-        logger.info(message)
-
-
-
-
-def select_point_clouds(point_cloud_in: laspy.LasData, flag_select: list) -> laspy.LasData :
+def point_cloud_selection(point_cloud_in: laspy.LasData, flag_select: list) -> laspy.LasData :
     """
     Select part of point cloud based on a list of flag.
     If the point value in the flag array is true, the point is selected, if False, the point is removed.
@@ -118,9 +51,115 @@ def select_point_clouds(point_cloud_in: laspy.LasData, flag_select: list) -> las
         pass
     return point_cloud_out
 
-def merge_point_clouds(List_of_point_clouds: list) -> laspy.LasData:
+
+
+
+def point_cloud_reprojection_directive(path_in_file_point_cloud : typing.Union[str, pathlib.Path],
+                                      path_out_file_point_cloud : typing.Union[str, pathlib.Path],
+                                      epsg_in : int, epsg_out : int,
+                                      ) -> str :
     """
-    This function merges point clouds together
+    This function creates the directive for the reprojection of a point cloud from one coordinate system to and other one.
+    :param path_in_file_point_cloud: input point cloud path
+    :param path_out_file_point_cloud: output point cloud path
+    :param epsg_in: input epsg
+    :param epsg_out: output epsg
+    :return: None
+    """
+    pipepline_pdal_template_file_name = settings.points_cloud.  PIPEPLINE_PDAL_REPROJECTION_TEMPLATE_FILE_NAME
+
+    path_file_pipepline_json = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                            pipepline_pdal_template_file_name)
+    pipepline_template = json.load(open(path_file_pipepline_json))
+
+    for item in pipepline_template.get('pipeline') :
+        # Add input file
+        if item.get('type') == 'readers.las' :
+            item['filename'] = path_in_file_point_cloud
+            item['spatialreference'] = f"EPSG:{epsg_in}"
+        # Add output file
+        if item.get('type') == 'writers.las' :
+            item['filename'] = path_out_file_point_cloud
+        # Add coordinates system
+        if item.get('type') == 'filters.reprojection' :
+            item['in_srs'] = f"EPSG:{epsg_in}"
+            item['out_srs'] = f"EPSG:{epsg_out}"
+
+    pipepline_json = json.dumps(pipepline_template, indent=4)
+
+    return pipepline_json
+
+
+
+def point_cloud_reprojection(path_in_file_point_cloud : typing.Union[str, pathlib.Path],
+                             path_out_file_point_cloud : typing.Union[str, pathlib.Path],
+                             epsg_in : int, epsg_out : int,
+                             ) -> None :
+    """
+    This function reprojects one point cloud into another coordinate system.
+    :param path_in_file_point_cloud: Path of the input point cloud
+    :param path_out_file_point_cloud: path of the output point cloud
+    :param epsg_in: input epsg
+    :param epsg_out: output epsg
+    :return: None
+    """
+    pipepline_json = point_cloud_reprojection_directive(path_in_file_point_cloud,
+                                                        path_out_file_point_cloud,
+                                                        epsg_in,
+                                                        epsg_out)
+
+    pipeline = pdal.Pipeline(pipepline_json)
+    pipeline.execute()
+
+
+def point_cloud_batch_reprojection(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
+                                   path_out_folder_point_cloud_reproject : typing.Union[str, pathlib.Path],
+                                   epsg_in : int, epsg_out : int, suffix : str = None, logger = None) -> None :
+    """
+    This function reprojects all point clouds from one folder into another coordinate system.
+    :param path_in_folder_point_cloud: Path of the folder that contains the point clouds to reproject
+    :param path_out_folder_point_cloud_reproject: Path of the folder that will contain the resulting point clouds
+    :param epsg_in: input epsg
+    :param epsg_out: output epsg
+    :param suffix: suffix for reprojected files
+    :param logger: logger
+    :return: None
+    """
+
+
+    list_point_cloud_in_files_name = [i for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
+
+    if logger:
+        message = f"The point cloud  {path_in_folder_point_cloud} reprojection process has started"
+        logger.info(message)
+        start = datetime.now()
+
+    arguments = []
+
+    for point_cloud_files_name in list_point_cloud_in_files_name:
+        input_point_cloud_files_path = os.path.join(path_in_folder_point_cloud, point_cloud_files_name)
+        if suffix :
+            output_point_cloud_files_name = os.path.basename(input_point_cloud_files_path).replace('.',f'_{suffix}.')
+        else :
+            output_point_cloud_files_name = os.path.basename(input_point_cloud_files_path)
+
+        output_point_cloud_files_path = os.path.join(path_out_folder_point_cloud_reproject,output_point_cloud_files_name)
+        arguments.append((input_point_cloud_files_path,output_point_cloud_files_path,epsg_in,epsg_out))
+
+    with multiprocessing.Pool() as pool:
+        pool.starmap(point_cloud_reprojection, arguments)
+
+    if logger:
+        processing_time = (datetime.now() - start).seconds
+        message = f"The  point cloud  {path_in_folder_point_cloud} reprojection process has finished in {processing_time} seconds"
+        logger.info(message)
+
+
+
+
+def point_cloud_laspy_merging(List_of_point_clouds: list) -> laspy.LasData:
+    """
+    This function merges laspy point clouds together
     :param List_of_point_clouds:  list of laspy point clouds
     :return: Merge of the initial point cloud in a laspy object (LasData)
     """
@@ -160,17 +199,67 @@ def merge_point_clouds(List_of_point_clouds: list) -> laspy.LasData:
 
 
 
-def downsampled_colorize_point_cloud(paths_in_out : tuple) -> None :
+
+def point_cloud_merging(point_clouds_folder_path: typing.Union[str, pathlib.Path],
+                        output_file_path : typing.Union[str, pathlib.Path], logger) -> None:
     """
-    This function runs the downsample process
-    :param paths_in_out: Tuple containing the in and out path of the point cloud
+    This function merge point cloud contained into a folder into one point cloud
+    :param point_clouds_folder_path: path of the folder that contains the input point clouds
+    :param output_file_path: path of the merged output pointcloud
+    :param logger: logger
     :return: None
     """
 
-    path_in_file_point_cloud = paths_in_out[0]
-    path_out_filse_colorized_point_cloud = paths_in_out[1]
+    list_of_paths_point_cloud = files.get_list_files_from_directory(point_clouds_folder_path, 'las')
 
-    print(f"Running downsampling for file {path_in_file_point_cloud}")
+    if logger:
+        message = f"The point clouds {point_clouds_folder_path} merging process has started"
+        logger.info(message)
+        for i, item in enumerate(list_of_paths_point_cloud) :
+            message = f"Initial point clouds {i} :  {item}"
+            logger.info(message)
+        start = datetime.now()
+
+
+    if os.path.exists(output_file_path) :
+        os.remove(output_file_path)
+
+    shutil.copyfile(list_of_paths_point_cloud[0], output_file_path)
+    list_of_paths_point_cloud.pop(0)
+
+
+    for point_cloud_path in list_of_paths_point_cloud:
+        with laspy.open(output_file_path, mode='a') as outlas:
+            with laspy.open(point_cloud_path) as inlas:
+                for points in inlas.chunk_iterator(2_000_000):
+                    outlas.append_points(points)
+
+
+    list_of_part_of_point_clouds = []
+
+    for point_cloud_path  in list_of_paths_point_cloud :
+        current_las = laspy.read(point_cloud_path)
+        list_of_part_of_point_clouds.append(current_las)
+
+
+    merged_laspy_point_clouds = point_cloud_laspy_merging(list_of_part_of_point_clouds)
+    merged_laspy_point_clouds.write(output_file_path)
+
+    if logger:
+        processing_time = (datetime.now() - start).seconds
+        message = f"Point cloud merging process has finished in {processing_time} seconds - {output_file_path} "
+        logger.info(message)
+
+
+
+def point_cloud_downsampling(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
+                             path_out_folder_point_cloud : typing.Union[str, pathlib.Path]) -> None :
+    """
+    This function runs the downsample process over one point cloud
+    :param path_in_folder_point_cloud: Path of the point cloud to be downsampled
+    :param path_out_folder_point_cloud: Path of the restulting point cloud
+    :return: None
+    """
 
     # Class to downsaple the point cloud.
     downsample_class = settings.points_cloud.downsample_classes
@@ -179,17 +268,17 @@ def downsampled_colorize_point_cloud(paths_in_out : tuple) -> None :
     voxel_size = settings.points_cloud.voxel_size
 
     # read las file as lapsy object
-    point_cloud_in = laspy.read(path_in_file_point_cloud)
+    point_cloud_in = laspy.read(path_in_folder_point_cloud)
     assert len(voxel_size) == len(downsample_class), 'DOWNSAMPLE_CLASSES has not the same length as VOXEL_SIZE'
 
     # Points to downsample according to their classes (see downsample_class variable)
     flag_pre_downsample = [point_cloud_in.raw_classification == this_class for this_class in downsample_class]
     flag_pre_downsample = (np.stack(flag_pre_downsample, axis=0).sum(axis=0) > 0).astype(bool)  # [N]
-    point_to_downsample = select_point_clouds(point_cloud_in, flag_pre_downsample)
+    point_to_downsample = point_cloud_selection(point_cloud_in, flag_pre_downsample)
 
     # Untouched point according to their classes (see downsample_class varaible)
     flag_retain = np.logical_not(flag_pre_downsample)
-    point_cloud_to_keep = select_point_clouds(point_cloud_in, flag_retain)
+    point_cloud_to_keep = point_cloud_selection(point_cloud_in, flag_retain)
 
     # Create a list that will gather all downlampled points and untouched points depending on their classes
     list_of_part_of_point_clouds = []
@@ -198,33 +287,224 @@ def downsampled_colorize_point_cloud(paths_in_out : tuple) -> None :
     for current_class, current_voxel_size in zip(downsample_class, voxel_size):
         # take only the current class of point
         flag_this_class = point_to_downsample.raw_classification == current_class
-        point_cloud_this_class = select_point_clouds(point_to_downsample, flag_this_class)
-        xyz_this_class_raw = np.stack([point_cloud_this_class.x, point_cloud_this_class.y, point_cloud_this_class.z], axis=1)  # [K, 3]
+        point_cloud_this_class = point_cloud_selection(point_to_downsample, flag_this_class)
+        xyz_this_class_raw = np.stack([point_cloud_this_class.x, point_cloud_this_class.y, point_cloud_this_class.z],
+                                      axis=1)  # [K, 3]
 
         # Convert float64 numpy array to Open3D object
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(xyz_this_class_raw)
 
         # Downsample input pointcloud into output pointcloud with a voxel and record the point ID
-        pcd_down, _, idx_prev = pcd.voxel_down_sample_and_trace(current_voxel_size, pcd.get_min_bound(), pcd.get_max_bound(),False)
+        pcd_down, _, idx_prev = pcd.voxel_down_sample_and_trace(current_voxel_size, pcd.get_min_bound(),
+                                                                pcd.get_max_bound(), False)
         idx_downsample = [i[0] for i in idx_prev]
         flag_post_downsample = [False] * len(xyz_this_class_raw)
         for i in idx_downsample:
             flag_post_downsample[i] = True
 
         # Select the resulting point according to theirs IDs
-        point_cloud_this_class_downsampled = select_point_clouds(point_cloud_this_class, flag_post_downsample)
+        point_cloud_this_class_downsampled = point_cloud_selection(point_cloud_this_class, flag_post_downsample)
 
         # Append to the list of point cloud
         list_of_part_of_point_clouds.append(point_cloud_this_class_downsampled)
 
     # Merge the list of point clouds together
-    point_cloud_out = merge_point_clouds([*list_of_part_of_point_clouds, point_cloud_to_keep])
+    point_cloud_out = point_cloud_laspy_merging([*list_of_part_of_point_clouds, point_cloud_to_keep])
 
     # Write the point cloud into las file
-    point_cloud_out.write(path_out_filse_colorized_point_cloud)
+    point_cloud_out.write(path_out_folder_point_cloud)
 
-    print(f"Downsampling finished for file {path_out_filse_colorized_point_cloud}")
+
+
+def point_cloud_batch_downsampling(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
+                                   path_out_folder_point_cloud : typing.Union[str, pathlib.Path],
+                                   suffix : str = None, logger = None) -> None :
+    """
+    This function runs the downsample process over a folder thta conatains point clouds
+    :param path_in_folder_point_cloud: Path of the folder that contains the point clouds to downsampled
+    :param path_out_folder_point_cloud: Path ot the folder that will contain the resulting point cloud
+    :param suffix: Resulting point cloud file suffix
+    :param logger: logger
+    :return: None
+    """
+
+
+    list_point_cloud_in_files_name = [i for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
+
+    if logger:
+        message = f"The point cloud  {path_in_folder_point_cloud} downsampling process has started"
+        logger.info(message)
+        start = datetime.now()
+
+    arguments = []
+
+    for point_cloud_files_name in list_point_cloud_in_files_name:
+        input_point_cloud_files_path = os.path.join(path_in_folder_point_cloud, point_cloud_files_name)
+        if suffix :
+            output_point_cloud_files_name = os.path.basename(input_point_cloud_files_path).replace('.',f'_{suffix}.')
+        else :
+            output_point_cloud_files_name = os.path.basename(input_point_cloud_files_path)
+
+        output_point_cloud_files_path = os.path.join(path_out_folder_point_cloud,output_point_cloud_files_name)
+        arguments.append((input_point_cloud_files_path,output_point_cloud_files_path))
+
+    with multiprocessing.Pool() as pool:
+        pool.starmap(point_cloud_downsampling, arguments)
+
+    if logger:
+        processing_time = (datetime.now() - start).seconds
+        message = f"The  point cloud downsampling process has finished in {processing_time} seconds - output folder : {path_out_folder_point_cloud} "
+        logger.info(message)
+
+
+
+
+
+
+
+
+def point_cloud_colorization(path_in_file_point_cloud : typing.Union[str, pathlib.Path],
+                             path_out_file_point_cloud : typing.Union[str, pathlib.Path],
+                             path_in_file_orthophoto : typing.Union[str, pathlib.Path],
+                             ) -> None :
+
+
+    pipepline_pdal_template_file_name = settings.points_cloud.PIPEPLINE_PDAL_COLORIZATION_TEMPLATE_FILE_NAME
+    path_file_pipepline_json = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                            pipepline_pdal_template_file_name)
+    pipepline_template = json.load(open(path_file_pipepline_json))
+
+    pipepline_json = copy.deepcopy(pipepline_template)
+    pipepline_json['pipeline'].insert(0, path_in_file_point_cloud)
+    pipepline_json['pipeline'][1]['raster'] = path_in_file_orthophoto
+    # pipepline_json['pipeline'][3]['filename'] = path_out_file_point_cloud
+    pipepline_json['pipeline'].append(path_out_file_point_cloud)
+    pipepline_json = json.dumps(pipepline_json, indent=4)
+
+    pipeline = pdal.Pipeline(pipepline_json)
+    pipeline.execute()
+
+
+
+
+def point_cloud_batch_colorization(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
+                                   path_out_folder_point_cloud : typing.Union[str, pathlib.Path],
+                                   path_in_file_orthophoto : typing.Union[str, pathlib.Path],
+                                   suffix : str = None, logger = None) -> None :
+    list_point_cloud_in_files_name = [i for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
+
+    if logger:
+        message = f"The point cloud  {path_in_folder_point_cloud} colorization process has started"
+        logger.info(message)
+        start = datetime.now()
+
+    arguments = []
+
+    for point_cloud_files_name in list_point_cloud_in_files_name:
+        input_point_cloud_files_path = os.path.join(path_in_folder_point_cloud, point_cloud_files_name)
+        if suffix:
+            output_point_cloud_files_name = os.path.basename(input_point_cloud_files_path).replace('.', f'_{suffix}.')
+        else:
+            output_point_cloud_files_name = os.path.basename(input_point_cloud_files_path)
+
+        output_point_cloud_files_path = os.path.join(path_out_folder_point_cloud, output_point_cloud_files_name)
+        arguments.append((input_point_cloud_files_path, output_point_cloud_files_path,path_in_file_orthophoto))
+
+    with multiprocessing.Pool() as pool:
+        pool.starmap(point_cloud_colorization, arguments)
+
+    if logger:
+        processing_time = (datetime.now() - start).seconds
+        message = f"The  point cloud colorization process has finished in {processing_time} seconds - output folder : {path_out_folder_point_cloud} "
+        logger.info(message)
+
+
+
+
+
+#################################################################################################################
+
+
+
+
+
+
+
+
+
+def batch_colorize_point_cloud(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
+                               path_out_folder_colorized_point_cloud : typing.Union[str, pathlib.Path],
+                               path_in_file_orthophoto : typing.Union[str, pathlib.Path],suffix : str = None,
+                               logger = None) -> None :
+    """
+    This function runs the colorisation process over all point cloud file in on folder.
+    It first define the Pdal Json pipepline and run the colorize_point_cloud() function.
+    It uses the multiprocess library to parallelize processes
+    :param path_in_folder_point_cloud: Path of the folder that contains the points to colorized.
+    :param path_out_folder_colorized_point_cloud: Path of the out folder.
+    :param path_in_file_orthophoto: Orthophoto used for the colorization.
+    :return: None
+    """
+
+    # Load pdal process template
+    pipepline_pdal_template_file_name = settings.points_cloud.PIPEPLINE_PDAL_COLORIZATION_TEMPLATE_FILE_NAME
+    path_file_pipepline_json = os.path.join(os.path.dirname(os.path.realpath(__file__)),pipepline_pdal_template_file_name)
+    pipepline_template = json.load(open(path_file_pipepline_json))
+    list_pipepline = []
+
+    # Get the list of all las files
+    list_point_cloud_files_name = [i for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
+
+
+
+    #assert path_in_file_orthophoto.endswith('vrt'), "Orthophoto must be an GDAL Virtual Format (VRT)"
+
+    for point_cloud_files_name in list_point_cloud_files_name :
+        input_point_cloud_files_path = os.path.join(path_in_folder_point_cloud,point_cloud_files_name)
+        output_point_cloud_files_path = os.path.join(path_out_folder_colorized_point_cloud,point_cloud_files_name)
+
+        # Adapt template pipepline for the current point cloud file
+        pipepline_json = copy.deepcopy(pipepline_template)
+        pipepline_json['pipeline'].insert(0, input_point_cloud_files_path)
+        pipepline_json['pipeline'][1]['raster'] = path_in_file_orthophoto
+        pipepline_json['pipeline'][3]['filename'] = output_point_cloud_files_path
+        pipepline_json = json.dumps(pipepline_json, indent=4)
+
+        list_pipepline.append(pipepline_json)
+
+
+    if logger:
+        message = f"The point cloud  {path_in_folder_point_cloud} colorization process has started"
+        logger.info(message)
+        start = datetime.now()
+
+    pool = Pool(number_of_cpu)
+    pool.map(run_pdal_pipepline, list_pipepline)
+    pool.close()
+    pool.join()
+
+    run_pdal_pipepline(list_pipepline[0])
+
+    pipeline = pdal.Pipeline(pipepline_json)
+    pipeline.execute()
+
+
+    if logger:
+        processing_time = (datetime.now() - start).seconds
+        message = f"The  point cloud  {path_in_folder_point_cloud} colorization process has finished in {processing_time} seconds"
+        logger.info(message)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -298,9 +578,9 @@ def create_cesium_3d_tiles(path_in_folder_point_cloud : typing.Union[str, pathli
 
 if __name__ == "__main__":
     path_in_folder_point_cloud = '/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/classified_point_cloud_processed'
-    path_out_folder_cesium_tile = '/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/classified_point_cloud_processed/cesium'
+    path_out_folder_colorized_point_cloud = '/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/color'
+    path_in_file_orthophoto = ''
 
-    create_cesium_3d_tiles(path_in_folder_point_cloud,path_out_folder_cesium_tile)
 
 
 

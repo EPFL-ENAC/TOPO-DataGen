@@ -3,7 +3,8 @@ POINTS_CLOUD:
   OUTPUT_FOLDER_NAME: "classified_point_cloud_processed"
   DOWNSAMPLE_CLASSES: [2,3] # Class of points that must be downsampled
   VOXEL_SIZE: [1.0,2.0] # Corresponding voxel size for the downsampling
-  PIPEPLINE_PDAL_TEMPLATE_FILE_NAME: "template_colorization_pipepline.json"
+  PIPEPLINE_PDAL_COLORIZATION_TEMPLATE_FILE_NAME: "PIPEPLINE_PDAL_COLORIZATION_TEMPLATE.json"
+  PIPEPLINE_PDAL_REPROJECTION_TEMPLATE_FILE_NAME: "PIPEPLINE_PDAL_REPROJECTION_TEMPLATE.json"
 ORTHOPHOTO:
   NO_DATA_VALUE: 0
   INPUT_FOLDER_NAME: "orthophoto_mosaic"
