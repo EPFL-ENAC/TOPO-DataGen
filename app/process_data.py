@@ -16,22 +16,15 @@ from tqdm import tqdm
 from typing import Union, Tuple
 import multiprocessing
 
-
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+DATA_FOLDER_PATH = "/home/regislongchamp/Desktop/temp_vnav"
 USER_HOME = os.path.expanduser("~")
 PROJ_DIR = os.path.abspath(os.path.join(__file__, '../..'))
+CESIUM_HOME = "$HOME/Documents/Cesium"
 sys.path.insert(0, PROJ_DIR)
 from scripts.reframeTransform import ReframeTransform
 
 
-# Get the number of CPUs in the system.
 number_of_cpu = multiprocessing.cpu_count()
-
-
-
-OUT_FOLDER_PATH = "/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample"
-
-CESIUM_HOME = '$HOME/Documents/Cesium'
 
 
 def read_preset(preset_path: str) -> tuple:
@@ -67,7 +60,7 @@ def geographic_to_ecef(lon: Union[float, np.ndarray], lat: Union[float, np.ndarr
 
 def prepare_lhs(num_dp: int, lon_range: list, lat_range: list, h_range: list,
                 yaw_range: list, pitch_range: list, roll_range: list, height_ref: Union[bool, str],
-                path_presets_numpy: str, data_type: str = "geocentric") -> None:
+                path_file_numpy_poses: str, data_type: str = "geocentric") -> None:
     """
     Generate npy file for LHS sampling. The output includes the information of camera poses.
     Args:
@@ -79,7 +72,7 @@ def prepare_lhs(num_dp: int, lon_range: list, lat_range: list, h_range: list,
         pitch_range:    Pitch angle range.
         roll_range:     Roll angle range.
         height_ref:     Height_ref for relative height.
-        data_name:      The filename of output .npy
+        path_file_numpy_poses:      The file path of output .npy
         data_type:      Type of range with defaults being "geocentric".
     """
 
@@ -90,8 +83,6 @@ def prepare_lhs(num_dp: int, lon_range: list, lat_range: list, h_range: list,
          pitch_range[1] - pitch_range[0], roll_range[1] - roll_range[0]])
     min_value = np.array([lon_range[0], lat_range[0], h_range[0], yaw_range[0], pitch_range[0], roll_range[0]])
     lhd = lhd * ranges + min_value
-
-
     if height_ref:
         print("Translating heights using provided DTM. The DTM has to be in LV95 with WGS84 heights")
         r = ReframeTransform()  # Transform wgs84 to lv95 poses
@@ -105,8 +96,6 @@ def prepare_lhs(num_dp: int, lon_range: list, lat_range: list, h_range: list,
         lhd[:, 0], lhd[:, 1], lhd[:, 2] = geographic_to_ecef(lhd[:, 0], lhd[:, 1], lhd[:, 2])
     else:
         raise NotImplementedError
-
-
     # Find surface and volume:
     origin = np.array(geographic_to_ecef(lon_range[0], lat_range[0], h_range[0]))
     lx = np.linalg.norm(np.array(geographic_to_ecef(lon_range[1], lat_range[0], h_range[0])) - origin)
@@ -114,9 +103,8 @@ def prepare_lhs(num_dp: int, lon_range: list, lat_range: list, h_range: list,
     lz = np.linalg.norm(np.array(geographic_to_ecef(lon_range[0], lat_range[0], h_range[1])) - origin)
     print("Approximate scene surface: " + str(lx * ly) + " m2")
     print("Approximate scene volume: " + str(lx * ly * lz) + " m3")
-
-    np.save(path_presets_numpy, lhd)
-
+    print(f"Save latin hypercube sampling poses here :  {path_file_numpy_poses}")
+    np.save(path_file_numpy_poses, lhd)
 
 
 def read_gps_pos(exif_line: str) -> float:
@@ -138,12 +126,12 @@ def read_gps_pos(exif_line: str) -> float:
     return d
 
 
-def prepare_phantom_drone_matching(data_dir: str, data_name: str, data_type: str = "geocentric") -> None:
+def prepare_phantom_drone_matching(data_dir: str, path_file_numpy_poses: str, data_type: str = "geocentric") -> None:
     """
     Extract camera poses for images collected by DJI Phantom 4 camera. Save the output to a .npy file.
     Args:
         data_dir:   Directory to the raw images.
-        data_name:  The filename of output .npy file.
+        path_file_numpy_poses:  The file pyth of output .npy file.
         data_type:  Type of positional info. with defaults being "geocentric", i.e., ECEF coordinates.
     """
     assert os.path.isdir(data_dir), "Path {:s} is not a directory!".format(data_dir)
@@ -172,10 +160,12 @@ def prepare_phantom_drone_matching(data_dir: str, data_name: str, data_type: str
         poses = np.array(poses)
         if data_type == "geocentric":
             poses[:, 0], poses[:, 1], poses[:, 2] = geographic_to_ecef(poses[:, 0], poses[:, 1], poses[:, 2])
-        preset_dir = os.path.join(SCRIPT_DIR, 'presets', data_name)
-        os.makedirs(preset_dir, exist_ok=True)
-        np.save(os.path.join(preset_dir, data_name + '_poses.npy'), poses)
-        with open(os.path.join(preset_dir, data_name + '_pic_names.csv'), 'w') as f_pic:
+
+        print(f"Save poses based on drone footings here :  {path_file_numpy_poses}")
+        np.save(path_file_numpy_poses, poses)
+        folder_path = os.path.dirname(path_file_numpy_poses)
+        folder_name = os.path.basename(folder_path)
+        with open(os.path.join(folder_path, f"{folder_name}_pic_names.csv"), 'w') as f_pic:
             f_pic.write(','.join(pic_names))
 
 
@@ -219,7 +209,7 @@ def move_files(dataset_name: str) -> None:
     os.makedirs(CESIUM_HOME, exist_ok=True)
     dir_path = os.path.join(CESIUM_HOME, dataset_name)
     os.makedirs(dir_path, exist_ok=True)
-    names_file = os.path.join(SCRIPT_DIR, 'presets', dataset_name, dataset_name + '_pic_names.csv')
+    names_file = os.path.join(DATA_FOLDER_PATH, 'presets', dataset_name, dataset_name + '_pic_names.csv')
     if os.path.exists(names_file):
         with open(names_file, 'r') as f:
             pic_names = f.readline().split(',')
@@ -252,10 +242,9 @@ def move_files(dataset_name: str) -> None:
             pass
 
 
-def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
+def start_server(dataset_name: str, scene_name: str, path_file_numpy_poses : str,
                  start_idx: int = 0, stop_idx: Union[None, int] = None,
-                 restart: bool = False, n_proc: int = 1, gpu_mode: str = '0', force_cuda: bool = False,
-                  ) -> None:
+                 restart: bool = False, n_proc: int = 1, gpu_mode: str = '0', force_cuda: bool = False) -> None:
     """
     Start local server for Cesium rendering.
     When it's in multi GPU mode, we use different firefox profiles. These have to be created beforehand and named like
@@ -275,30 +264,24 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
 
     for f in glob.glob(os.path.join(USER_HOME, 'Downloads', '*finished.txt')):
         os.remove(f)
-
-    command = '''rm -f {:s}'''.format(os.path.join(USER_HOME, 'Downloads', dataset_name + '*'))
     subprocess.run('''rm -f {:s}'''.format(os.path.join(USER_HOME, 'Downloads', dataset_name + '*')), shell=True)
-
     os.makedirs(CESIUM_HOME, exist_ok=True)
     dataset_dir = os.path.join(CESIUM_HOME, dataset_name)
-
 
     # Try continuing the data rendering, just make sure the python and javascript scripts are talking about
     # the same poses, otherwise a restart is needed.
     if os.path.exists(dataset_dir) and not restart:
         print("Dataset directory already exists")
-        js_poses = np.load(path_presets_numpy)
         try:
-            js_poses = np.load(os.path.join(SCRIPT_DIR, 'presets', dataset_name, dataset_name + '_poses.npy'))
-
-            poses = np.load(os.path.join(dataset_dir, dataset_name + '_poses.npy'))
+            js_poses = np.load(os.path.join(DATA_FOLDER_PATH, 'presets', dataset_name, dataset_name + '_poses.npy'))
+            poses = np.load(path_file_numpy_poses)
             if not np.array_equal(js_poses, poses):
                 restart = True
             else:
                 print("Successfully continuing from previous state")
         except Exception:
             restart = True
-    """ 
+
     # If dataset already exists but we need to restart, move the existing one as dataset_saved to not overwrite it.
     if os.path.exists(dataset_dir) and restart:
         print("Saving the existing dataset and generate a brand new one from scratch")
@@ -314,7 +297,7 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
     if not os.path.exists(dataset_dir):
         # start the generation from scratch if the dataset directory is non-existing
         os.makedirs(dataset_dir)
-        shutil.copyfile(os.path.join(SCRIPT_DIR, 'presets', dataset_name, dataset_name + '_poses.npy'),
+        shutil.copyfile(os.path.join(path_file_numpy_poses),
                         os.path.join(dataset_dir, dataset_name + '_poses.npy'))
         poses = np.load(os.path.join(dataset_dir, dataset_name + '_poses.npy'))
         indexes = np.arange(0, len(poses))
@@ -352,6 +335,7 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
     else:
         n_pic_first_gpu = round(len(indexes) / n_proc)
         n_pic_sec_gpu = len(indexes) - n_pic_first_gpu
+
     for i in range(n_proc):
         if i < n_proc - 1:
             if not i % 2:  # even
@@ -369,13 +353,16 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
     firefox_process = []
     global terrain_server_process
     terrain_server_process = None
+
     if gpu_mode == '0' or gpu_mode == 'multi':
         subprocess.run('firefox -CreateProfile gpu0', shell=True)
     if gpu_mode == '1' or gpu_mode == 'multi':
         subprocess.run('firefox -CreateProfile gpu1', shell=True)
 
+
     use_first_gpu = "__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia "
     subprocess.run('killall node', shell=True, stderr=subprocess.DEVNULL)
+
 
     for i, idx_ls in enumerate(proc_index):
         if gpu_mode == '0' or gpu_mode == '1':
@@ -389,28 +376,47 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
             firefox_process.append(None)
             continue
 
-        with open(os.path.join(SCRIPT_DIR, 'msgtojs.txt'), 'w') as f:
+        with open(os.path.join(DATA_FOLDER_PATH, 'msgtojs.txt'), 'w') as f:
             # write name, process index and poses index
             f.write(dataset_name + ',' + str(i) + ',' + ','.join(idx_ls.astype(str)))
-        with open(os.path.join(SCRIPT_DIR, 'scene_name.txt'), 'w') as f:
+        with open(os.path.join(DATA_FOLDER_PATH, 'scene_name.txt'), 'w') as f:
             f.write(scene_name)
+
 
         # Start terrain server once and only once. The assets are accessible to all rendering processes.
         if terrain_server_process is None:
+
+            path_cesium_terrain_tile = os.path.join(DATA_FOLDER_PATH,'orthophoto_mosaic_processed','terrain-tiles')
+
+            if not os.path.isdir(path_cesium_terrain_tile) :
+                print(f"Cesium terrain tiles have not been found here : {path_cesium_terrain_tile}")
+
+            path_cesium_server = os.path.join(USER_HOME,'go','bin','cesium-terrain-server')
+            print('path_cesium_terrain_tile ', path_cesium_terrain_tile)
+
+
             terrain_server_process = subprocess.Popen(["{:s}/go/bin/cesium-terrain-server".format(USER_HOME),
-                                                       "-dir", "{:s}".format(os.path.join(PROJ_DIR,
-                                                                                          'data_preprocess',
-                                                                                          scene_name,
-                                                                                          'tilesets/terrain')),
+                                                       "-dir", "{:s}".format(path_cesium_terrain_tile),
                                                        "-port", "{:d}".format(3000),
                                                        "-cache-limit", "4GB", "-no-request-log"]).pid
+
+
+
+
             print("Cesium terrain server: port number must be consistent in Cesium app.js script.")
             print("visit http://localhost:3000/tilesets/{:s}-serving/layer.json for sanity check!".format(scene_name))
             print("if everything is fine, you should see the meta-data json file")
             time.sleep(2)
 
         # Let node.js start
-        node_process.append(subprocess.Popen(["node", PROJ_DIR + "/server.js", "--port", "{0}".format(8080 + i)]).pid)
+
+        path_server_js = os.path.join(PROJ_DIR,'server.js')
+
+        print("path_server_js ",path_server_js)
+        if not os.path.exists(path_server_js) :
+            print(f"Server JS hav not been found here {path_server_js}")
+
+        node_process.append(subprocess.Popen(["node", path_server_js, "--port", "{0}".format(8080 + i)]).pid)
         time.sleep(2)
 
         firefox_open_mode = "-new-instance -width 720 -height 640 -left 0 -top {0}".format((i % 2) * 640) \
@@ -420,6 +426,7 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
         command = "{0}firefox {1} -P {2} http://localhost:{3}".format(use_first_gpu if gpu == 1 or force_cuda else "",
                                                                       firefox_open_mode,
                                                                       profile, 8080 + i)
+        print('ooooo')
         firefox_process.append(subprocess.Popen(["/bin/bash", "-c", command]).pid)
         time.sleep(2)  # Let firefox retrieve information in msgtojs.txt
     generating = any(node_process)
@@ -443,17 +450,16 @@ def start_server(dataset_name: str, scene_name: str, path_presets_numpy: str,
             os.remove(filename)
         generating = any(node_process)
         move_files(dataset_name)
-        if os.path.exists(os.path.join(SCRIPT_DIR, 'msgtojs.txt')):
-            os.remove(os.path.join(SCRIPT_DIR, 'msgtojs.txt'))
-        if os.path.exists(os.path.join(SCRIPT_DIR, 'scene_name.txt')):
-            os.remove(os.path.join(SCRIPT_DIR, 'scene_name.txt'))
+        if os.path.exists(os.path.join(DATA_FOLDER_PATH, 'msgtojs.txt')):
+            os.remove(os.path.join(DATA_FOLDER_PATH, 'msgtojs.txt'))
+        if os.path.exists(os.path.join(DATA_FOLDER_PATH, 'scene_name.txt')):
+            os.remove(os.path.join(DATA_FOLDER_PATH, 'scene_name.txt'))
     if not closed_by_user:
         print("***** Dataset {:s} was generated with success! ***** ".format(dataset_name))
     else:
         print("***** Dataset generation was finished for dataset {:s} but at least one process "
               "was closed forcefully before the end! *****".format(dataset_name))
-    
-    """
+
 
 def signal_handler(signal, frame):
     """
@@ -515,6 +521,71 @@ def config_parser():
     return opt
 
 
+
+
+
+def define_poses(name, process_type : str, input_path : str = None):
+
+
+    # Define numpy poses paths
+    poses_prefix_name = name
+    path_file_numpy_poses = os.path.join(DATA_FOLDER_PATH, 'presets', poses_prefix_name,f"{poses_prefix_name}_poses.npy")
+    os.makedirs(os.path.dirname(path_file_numpy_poses), exist_ok=True)
+
+    # If poses defined by drone_footages_poses
+    if process_type == 'footage' :
+        if not os.path.isdir(input_path) :
+            msg = f"Input path {input_path} should be a directory for footage process type."
+            raise ValueError(msg)
+        path_folder_drone_footages = input_path
+        prepare_phantom_drone_matching(path_folder_drone_footages, path_file_numpy_poses)
+
+    # If poses defined by latin hypercube sampling
+    elif process_type == 'lhs' :
+        if not input_path.endswith('.json') :
+            msg = "Input path {input_path} should ends with .json for a lhs process type."
+            raise ValueError(msg)
+        path_file_presets = input_path
+        [n, lon, lat, h, yaw, pitch, roll, height_ref] = read_preset(path_file_presets)
+        prepare_lhs(n, lon, lat, h, yaw, pitch, roll, height_ref, path_file_numpy_poses)
+
+    elif process_type == 'move_file' :
+        move_files(poses_prefix_name)
+
+    else :
+        msg = f"'process_type' must be within the list [lhs,footage,move]"
+        raise ValueError(msg)
+
+    return path_file_numpy_poses
+
+
+def run(name,path_file_numpy_poses, start_index: int = None , stop_index : int = None, gpu_mode : str = 0 , force_cuda : bool = False, restart : bool= False):
+
+    for j, (name, scene_name) in enumerate(zip(name, name)):
+        start = start_index if start_index else 0
+        stop = stop_index if stop_index else None
+        start_server(name, name,path_file_numpy_poses, start_idx=start, stop_idx=stop, restart=restart,
+                     n_proc=number_of_cpu, gpu_mode=gpu_mode, force_cuda=force_cuda)
+
+
+if __name__ == "__main__":
+
+    name = 'trial'
+    process_type = 'lhs' # footage or lhs or move_file
+
+    # input_path = "/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/drone_footages"
+    input_path = "/home/regislongchamp/Desktop/temp_vnav/presets/presets.json"
+    # input_path = None
+
+    path_file_numpy_poses = define_poses(name, process_type = 'lhs',input_path=input_path)
+
+
+    gpu_mode =  '0' # ['0', '1', 'multi']
+    run(name,path_file_numpy_poses,start_index = None, stop_index = None, gpu_mode=gpu_mode,force_cuda = False, restart = False)
+
+
+
+"""
 def main():
     if len(args.name) > 1:
         if args.p is not None or args.matchPhantom is not None or args.prepare or args.movefiles:
@@ -547,49 +618,14 @@ def main():
                          n_proc=args.nproc, gpu_mode=args.gpumode, force_cuda=args.force_cuda)
 
 
-
-def run_latin_hypercube_sampling(path_presets,path_presets_numpy) :
-
-    [n, lon, lat, h, yaw, pitch, roll, height_ref] = read_preset(path_presets)
-
-    prepare_lhs(n, lon, lat, h, yaw, pitch, roll, height_ref,path_presets_numpy)
-
-    start = 0
-    stop = None
-
-    dataset_name = ''
-    scene_name = ''
-
-    start_server(dataset_name, scene_name, path_presets_numpy=path_presets_numpy, start_idx=start, stop_idx=stop, restart=False,
-                 n_proc=number_of_cpu, gpu_mode='multi', force_cuda=False
-                 )
-
-
-
-
-
-def run_matching_synthetic_images(path_folder_drone_footages, path_data_folder) :
-    prepare_phantom_drone_matching(path_folder_drone_footages, path_data_folder)
-
-
-
-
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal_handler)
 
-    path_presets = os.path.join(OUT_FOLDER_PATH,'presets.json')
-    path_presets_numpy = path_presets.replace('.json','.npy')
-    run_latin_hypercube_sampling(path_presets,path_presets_numpy)
+    args = config_parser()
+    np.random.seed(2021)
+    CESIUM_HOME = args.cesiumhome
+    if CESIUM_HOME[-1] == '/':
+        CESIUM_HOME = CESIUM_HOME[:-1]
+    main()
 
-
-
-
-
-    #
-    # signal.signal(signal.SIGINT, signal_handler)
-    #
-    # args = config_parser()
-    # np.random.seed(2021)
-    # CESIUM_HOME = args.cesiumhome
-    # if CESIUM_HOME[-1] == '/':
-    #     CESIUM_HOME = CESIUM_HOME[:-1]
-    # main()
+"""

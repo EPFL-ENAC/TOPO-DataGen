@@ -36,6 +36,7 @@ def get_list_files_from_directory(path_root_folder : typing.Union[str, pathlib.P
 def zip_files_with_patter(input_folder : typing.Union[str, pathlib.Path], out_file_name : str, pattern,file_type)-> None :
     all_files = get_list_files_from_directory(input_folder,file_type)
     list_file_to_zip = [i for i in all_files if pattern in i]
+    print(list_file_to_zip)
     with ZipFile(out_file_name, 'w') as zipObj :
         for file in list_file_to_zip :
             zipObj.write(file, os.path.basename(file))

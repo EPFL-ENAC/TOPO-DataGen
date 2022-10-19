@@ -12,6 +12,7 @@ from scipy import interpolate
 
 
 
+
 def orthophoto_reprojection(path_in_file_orthophoto: typing.Union[str, pathlib.Path],
                             path_out_file_orthophoto : typing.Union[str, pathlib.Path],
                             epsg_in : int, epsg_out : int) -> None :
@@ -44,9 +45,13 @@ def orthophotos_extend(path_in_file,epsg_in) :
 
 
 
-
-
-
+def tile_orthophotos(path_in_file_orthophoto : typing.Union[str, pathlib.Path],
+                        path_out_folder_tiled_orthophoto : typing.Union[str, pathlib.Path],
+                     epsg : str = '4326'
+                     ):
+    # Merge raster into one
+    command = f"gdal2tiles.py --zoom 0-20 --s_srs epsg:{epsg} --processes 12 {path_in_file_orthophoto} {path_out_folder_tiled_orthophoto}"
+    os.system(command)
 
 
 
@@ -57,7 +62,7 @@ def merge_orthophotos(path_in_folder_orthophoto : typing.Union[str, pathlib.Path
                       logger = None) -> None :
 
     """
-    This function merge multipe orthophoto into one tif file
+    This function merge multiple orthophotos into one tif file
     :param path_in_folder_orthophoto: Path of the folder that contains the input orthophotos
     :param path_out_file_merged_orthophoto: Path of the folder that contains the output merged orthophotos
     :return: None
@@ -77,6 +82,8 @@ def merge_orthophotos(path_in_folder_orthophoto : typing.Union[str, pathlib.Path
     list_tif_files_name = [os.path.join(path_in_folder_orthophoto,i) for i in os.listdir(path_in_folder_orthophoto) if i.endswith('.tif')]
     list_tif_files_name_text = " ".join(list_tif_files_name)
 
+    if not os.path.exists(os.path.dirname(path_out_file_merged_orthophoto_temp)) :
+        os.makedirs(os.path.dirname(path_out_file_merged_orthophoto_temp))
 
     # Merge raster into one
     command = f"gdalbuildvrt {path_out_file_merged_orthophoto_temp} {list_tif_files_name_text}"
@@ -105,8 +112,8 @@ def merge_orthophotos(path_in_folder_orthophoto : typing.Union[str, pathlib.Path
         logger.info(message)
 
 
+
+
+
 if __name__ == "__main__":
     path_in = '/media/regislongchamp/Windows/projects/TOPO-DataGen/data_sample/orthophoto_mosaic_processed/orthophoto_merged.tif'
-    orthophotos_extend(path_in,3857)
-
-

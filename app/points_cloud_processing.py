@@ -553,10 +553,11 @@ def ept_json_fix(ept_json_path : typing.Union[str, pathlib.Path]) :
 
 
 def create_cesium_3d_tiles(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
-                               path_out_folder_cesium_tile: typing.Union[str, pathlib.Path]) :
+                               path_out_folder_point_cloud_ept: typing.Union[str, pathlib.Path],
+                           path_out_folder_point_cloud_cesium_tiles : typing.Union[str, pathlib.Path]) :
 
 
-    path_merged_las = os.path.join(path_out_folder_cesium_tile,'mergedLAS-ecef-ept')
+    path_merged_las = path_out_folder_point_cloud_ept
     path_input_las = f"{path_in_folder_point_cloud}/*.las"
     command = f"entwine build -i {path_input_las} -o {path_merged_las} \
               --scale 0.001 --deep --srs EPSG:4978 -t {number_of_cpu} -f -v"
@@ -567,7 +568,7 @@ def create_cesium_3d_tiles(path_in_folder_point_cloud : typing.Union[str, pathli
     ept_json_fix(ept_json_path)
 
     # Translate EPT to 3D Tiles
-    command = f"npx ept tile {ept_json_path} -o {path_out_folder_cesium_tile}/pointCloud-tiles -t {number_of_cpu} -fv"
+    command = f"npx ept tile {ept_json_path} -o {path_out_folder_point_cloud_cesium_tiles} -t {number_of_cpu} -fv"
     os.system(command)
 
 
