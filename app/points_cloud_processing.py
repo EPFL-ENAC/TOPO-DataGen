@@ -1,6 +1,27 @@
-"""
-This code aims to gather all functions used to process points clouds (las format).
-"""
+##################################################
+## This file provides tools to manupulate points clouds (las format)
+##################################################
+## Copyright (c) 2021-2022 Topo-DataGen developers
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##################################################
+## Author: Regis Longchamp
+## Copyright: Copyright 2022, Topo-DataGen ENAC OS Grant
+## Credits: EPFL ENAC
+## License: GNU General Public License
+##################################################
+
 import os
 import json
 import shutil
@@ -420,124 +441,6 @@ def point_cloud_batch_colorization(path_in_folder_point_cloud : typing.Union[str
         logger.info(message)
 
 
-
-
-
-#################################################################################################################
-
-
-
-
-
-
-
-
-
-def batch_colorize_point_cloud(path_in_folder_point_cloud : typing.Union[str, pathlib.Path],
-                               path_out_folder_colorized_point_cloud : typing.Union[str, pathlib.Path],
-                               path_in_file_orthophoto : typing.Union[str, pathlib.Path],suffix : str = None,
-                               logger = None) -> None :
-    """
-    This function runs the colorisation process over all point cloud file in on folder.
-    It first define the Pdal Json pipepline and run the colorize_point_cloud() function.
-    It uses the multiprocess library to parallelize processes
-    :param path_in_folder_point_cloud: Path of the folder that contains the points to colorized.
-    :param path_out_folder_colorized_point_cloud: Path of the out folder.
-    :param path_in_file_orthophoto: Orthophoto used for the colorization.
-    :return: None
-    """
-
-    # Load pdal process template
-    pipepline_pdal_template_file_name = settings.points_cloud.PIPEPLINE_PDAL_COLORIZATION_TEMPLATE_FILE_NAME
-    path_file_pipepline_json = os.path.join(os.path.dirname(os.path.realpath(__file__)),pipepline_pdal_template_file_name)
-    pipepline_template = json.load(open(path_file_pipepline_json))
-    list_pipepline = []
-
-    # Get the list of all las files
-    list_point_cloud_files_name = [i for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
-
-
-
-    #assert path_in_file_orthophoto.endswith('vrt'), "Orthophoto must be an GDAL Virtual Format (VRT)"
-
-    for point_cloud_files_name in list_point_cloud_files_name :
-        input_point_cloud_files_path = os.path.join(path_in_folder_point_cloud,point_cloud_files_name)
-        output_point_cloud_files_path = os.path.join(path_out_folder_colorized_point_cloud,point_cloud_files_name)
-
-        # Adapt template pipepline for the current point cloud file
-        pipepline_json = copy.deepcopy(pipepline_template)
-        pipepline_json['pipeline'].insert(0, input_point_cloud_files_path)
-        pipepline_json['pipeline'][1]['raster'] = path_in_file_orthophoto
-        pipepline_json['pipeline'][3]['filename'] = output_point_cloud_files_path
-        pipepline_json = json.dumps(pipepline_json, indent=4)
-
-        list_pipepline.append(pipepline_json)
-
-
-    if logger:
-        message = f"The point cloud  {path_in_folder_point_cloud} colorization process has started"
-        logger.info(message)
-        start = datetime.now()
-
-    pool = Pool(number_of_cpu)
-    pool.map(run_pdal_pipepline, list_pipepline)
-    pool.close()
-    pool.join()
-
-    run_pdal_pipepline(list_pipepline[0])
-
-    pipeline = pdal.Pipeline(pipepline_json)
-    pipeline.execute()
-
-
-    if logger:
-        processing_time = (datetime.now() - start).seconds
-        message = f"The  point cloud  {path_in_folder_point_cloud} colorization process has finished in {processing_time} seconds"
-        logger.info(message)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def batch_downsampled_colorize_point_cloud(path_in_folder_point_cloud: typing.Union[str, pathlib.Path],
-                                     path_out_folder_colorized_point_cloud: typing.Union[str, pathlib.Path],
-                                           logger = None):
-
-    list_point_cloud_files = [os.path.join(i) for i in os.listdir(path_in_folder_point_cloud) if i.endswith('.las')]
-
-    list_in_out_path = []
-
-    for point_cloud_file_name in list_point_cloud_files :
-        path_in_file_point_cloud = os.path.join(path_in_folder_point_cloud,point_cloud_file_name)
-        path_out_filse_colorized_point_cloud = os.path.join(path_out_folder_colorized_point_cloud,point_cloud_file_name)
-        list_in_out_path.append((path_in_file_point_cloud,path_out_filse_colorized_point_cloud))
-
-    if logger:
-        message = f"The point cloud  {path_in_folder_point_cloud} downsampling process has started"
-        logger.info(message)
-        start = datetime.now()
-
-    pool = Pool(number_of_cpu)
-    pool.map(downsampled_colorize_point_cloud, list_in_out_path)
-    pool.close()
-    pool.join()
-
-    if logger:
-        processing_time = (datetime.now() - start).seconds
-        message = f"The  point cloud  {path_in_folder_point_cloud} downsampling process has finished in {processing_time} seconds"
-        logger.info(message)
-
-
-
 def ept_json_fix(ept_json_path : typing.Union[str, pathlib.Path]) :
     with open(ept_json_path, 'r') as f:
         data = json.load(f)
@@ -570,10 +473,6 @@ def create_cesium_3d_tiles(path_in_folder_point_cloud : typing.Union[str, pathli
     # Translate EPT to 3D Tiles
     command = f"npx ept tile {ept_json_path} -o {path_out_folder_point_cloud_cesium_tiles} -t {number_of_cpu} -fv"
     os.system(command)
-
-
-
-
 
 
 
