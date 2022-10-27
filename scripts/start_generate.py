@@ -14,12 +14,14 @@ import signal
 import rasterio
 from tqdm import tqdm
 from typing import Union, Tuple
+import re
+from config import settings
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 USER_HOME = os.path.expanduser("~")
 PROJ_DIR = os.path.abspath(os.path.join(__file__, '../..'))
 sys.path.insert(0, PROJ_DIR)
-from scripts.reframeTransform import ReframeTransform
+from reframeTransform import ReframeTransform
 
 
 def read_preset(preset_path: str) -> tuple:
@@ -93,6 +95,7 @@ def prepare_lhs(num_dp: int, lon_range: list, lat_range: list, h_range: list,
         raise NotImplementedError
     # Find surface and volume:
     origin = np.array(geographic_to_ecef(lon_range[0], lat_range[0], h_range[0]))
+
     lx = np.linalg.norm(np.array(geographic_to_ecef(lon_range[1], lat_range[0], h_range[0])) - origin)
     ly = np.linalg.norm(np.array(geographic_to_ecef(lon_range[0], lat_range[1], h_range[0])) - origin)
     lz = np.linalg.norm(np.array(geographic_to_ecef(lon_range[0], lat_range[0], h_range[1])) - origin)
@@ -492,7 +495,40 @@ def config_parser():
     return opt
 
 
+def setup_app_js()-> None :
+    """
+    Refactor App.js with token and assetID from config file.
+    :return: None
+    """
+
+    root_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    path_app_file = os.path.join(root_folder, 'source', 'app.js')
+
+    cesium_asset_id = settings.CESIUM_ASSET_ID
+    cesium_token = settings.CESIUM_TOKEN
+
+    file = open(path_app_file, "r")
+    list_lines = []
+
+    for line in file:
+        if 'Cesium.Ion.defaultAccessToken' in line :
+            new_line = re.sub(r"\'[^)]*\'", f"'{cesium_token}'", line)
+        elif 'url: Cesium.IonResource.fromAssetId' in line :
+            new_line = re.sub(r'\([^)]*\)', f'({cesium_asset_id})', line)
+        else :
+            new_line = line
+        list_lines.append(new_line)
+
+    file_content = ''.join(list_lines)
+
+    with open(path_app_file, 'w') as fp:
+        fp.write(file_content)
+
+
 def main():
+    setup_app_js()
+
+
     if len(args.name) > 1:
         if args.p is not None or args.matchPhantom is not None or args.prepare or args.movefiles:
             raise Exception("Cannot prepare new dataset(s) when several dataset names are provided. "

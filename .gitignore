@@ -21,3 +21,6 @@ temp/
 data_sample/*/*.las
 data_sample/*/*.tif
 data_sample/*/*.JPG
+data_preprocess/*/*/*.JPG
+.secrets.yaml
+*pyc

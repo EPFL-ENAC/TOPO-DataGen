@@ -1,0 +1,8 @@
+{
+	"pipeline": [
+		{
+			"type": "filters.colorization"
+		}
+
+	]
+}

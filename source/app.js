@@ -328,14 +328,11 @@ function addCesiumEntities() {
         throw "The scene name is not correct!";
     }
     console.log("Loading Cesium entities for scene " + scene_name);
-    if (scene_name === 'EPFL') {
+
         // Load 3D tiles
         tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
-                // TS token: old EPFL point cloud
-                // url: Cesium.IonResource.fromAssetId(176133),
-                // Group token: new point cloud from swisstopo
-                url: Cesium.IonResource.fromAssetId(651876),
+                url: Cesium.IonResource.fromAssetId(1377422),
                 // url: 'http://localhost:8080/data_preprocess/'+ scene_name + '/pointCloud-tiles/tileset.json',
                 maximumScreenSpaceError: 0.5, // the important parameter
                 maximumMemoryUsage: 32768, // high value
@@ -351,9 +348,7 @@ function addCesiumEntities() {
             console.log('An error occurred loading tile: ' + error.url);
             console.log('Error: ' + error.message);
         });
-    } else {
 
-    }
     // general performance settings
     viewer.imageryLayers.addImageryProvider(new Cesium.TileMapServiceImageryProvider({
                 url: 'http://localhost:8080/data_preprocess/' + scene_name + '/imagery-tiles'
@@ -374,12 +369,9 @@ function addCesiumEntities() {
 }
 
 function removeCesiumEntities() {
-    if (scene_name === 'EPFL') {
         tileset.destroy();
         viewer.scene.primitives.remove(tileset);
-    } else {
 
-    }
 }
 
 async function reloadCesiumEntities() {
@@ -390,9 +382,8 @@ async function reloadCesiumEntities() {
 }
 
 // TS token
-// Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxM2VjMjQ2YS1lNDFmLTQyYzQtOGY0MC02MzU5OGZkMzBmYjYiLCJpZCI6MzY2NjAsImlhdCI6MTYwMzg3NzAzNX0.rtRnq5-M_rmJCqUHjXWyWz7zsNaU66aH1-ME4qYJjlk';
-// Group token
-Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkODAzZDIxNi03OWE5LTQ4MDEtYjY1MS05NjRjYTUxYWY1NDEiLCJpZCI6NjIyODAsImlhdCI6MTYyNjg3NjU1OH0.HnC4hqaE96z02820ZD3UwwGFuSoTiJn7iUtH6G4cpII'
+
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlODAzY2ZhZS0wNjViLTQwM2MtYmFmZS0wMzY1ODhjNWVkMmYiLCJpZCI6OTM5NjcsImlhdCI6MTY1MjcwNDA5NX0.U-QwCcJnPvEaDIDXGO1BlPLDMleNYEaGERMyvzChs_o'
 
 var viewer = new Cesium.Viewer('cesiumContainer', {
     requestRenderMode : true,

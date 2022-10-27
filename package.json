@@ -6,6 +6,7 @@
   "dependencies": {
     "cesium": "^1.86.1",
     "compression": "^1.6.2",
+    "dotenv": "^16.0.3",
     "ept-tools": "^0.0.13",
     "express": "^4.15",
     "nd4js": "^1.3.0",

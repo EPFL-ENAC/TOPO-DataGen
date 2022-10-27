@@ -1,0 +1,19 @@
+{
+    "pipeline":[
+     {
+        "type":"readers.las",
+        "filename":"",
+        "spatialreference":""
+       
+      },
+      {
+        "type":"filters.reprojection",
+        "in_srs":"",
+        "out_srs":""
+      },
+      {
+        "type":"writers.las",       
+        "filename":""
+      }
+    ]
+  }

@@ -1,0 +1,12 @@
+SourceFile,GPSPosition,AbsoluteAltitude,CameraYaw,CameraPitch,CameraRoll
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0023.JPG,"46 deg 31' 50.81"" N, 6 deg 32' 28.80"" E",+645.10,+35.40,-89.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0041.JPG,"46 deg 31' 57.76"" N, 6 deg 32' 33.47"" E",+577.27,-90.50,-90.00,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0063.JPG,"46 deg 31' 57.07"" N, 6 deg 32' 40.12"" E",+581.60,+43.90,-90.00,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0073.JPG,"46 deg 31' 59.28"" N, 6 deg 32' 38.30"" E",+616.51,-66.30,-90.00,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0150.JPG,"46 deg 32' 1.25"" N, 6 deg 32' 34.51"" E",+577.98,-73.40,-89.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0242.JPG,"46 deg 32' 15.40"" N, 6 deg 33' 4.80"" E",+651.97,-106.00,-89.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0263.JPG,"46 deg 32' 22.37"" N, 6 deg 33' 2.39"" E",+703.76,+10.90,-89.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0315.JPG,"46 deg 32' 10.21"" N, 6 deg 32' 41.29"" E",+593.37,+14.60,-88.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0384.JPG,"46 deg 32' 14.55"" N, 6 deg 32' 55.15"" E",+731.06,-61.40,-88.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0407.JPG,"46 deg 32' 13.18"" N, 6 deg 32' 42.81"" E",+642.18,-137.00,-88.90,+0.00
+/media/regislongchamp/Windows/projects/vnav/TOPO-DataGen-current-dev/data_preprocess/demo/drone_data/DJI_0470.JPG,"46 deg 31' 59.59"" N, 6 deg 32' 46.92"" E",+618.72,-12.10,-88.90,+0.00

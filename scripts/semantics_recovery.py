@@ -302,6 +302,7 @@ def main():
     output_path_distance = os.path.abspath(args.output_path_distance)
     file_ls, folder_ls = all_path(input_path, filter_list=['.npy'])
 
+
     # load raw las and turn into 3D point array
     _big_pc_label = []
 
