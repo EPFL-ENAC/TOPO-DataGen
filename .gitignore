@@ -6,21 +6,23 @@ scripts/__pycache__
 
 */msgtojs.txt
 */scene_name.txt
-data_preprocess/*/*surface3d*
-data_preprocess/*/*image10*
+.secrets.yaml
+*pyc
+
+
+temp/
+
+# Data
+data_preprocess/*/*/*.JPG
 data_preprocess/*/imagery-tiles
 data_preprocess/*/terrain-tiles
 data_preprocess/*/pointCloud-tiles
 data_preprocess/*/tilesets
+data_preprocess/*/*surface3d*/
+data_preprocess/*/*image10*/
 scripts/presets/demo*/
 
-temp/
 
 
-# Data 
-data_sample/*/*.las
-data_sample/*/*.tif
-data_sample/*/*.JPG
-data_preprocess/*/*/*.JPG
-.secrets.yaml
-*pyc
+
+
