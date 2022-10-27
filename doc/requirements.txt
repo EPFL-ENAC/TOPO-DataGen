@@ -1,0 +1,8 @@
+sphinx==5.1.1
+sphinx_rtd_theme==1.0.0
+nbsphinx==0.8.9
+myst-parser==0.18.1
+sphinx-argparse==0.3.2
+opencv-python==4.6.0.66
+open3d==0.16.0
+scikit-image==0.19.3

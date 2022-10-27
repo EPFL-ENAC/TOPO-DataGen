@@ -31,7 +31,7 @@ Create or make sure that the folder `demo` folder exits :
 | ├── 📁 ...
 
 
-Step 2 : Data downaloding and preprocessing
+Step 2 : Data downloading and preprocessing
 --------------------------------------------
 
 *Objective* : Prepare the data for the local and Cesium Ion processing. 

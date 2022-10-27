@@ -176,11 +176,15 @@ def export_data(path_folder_in : str, path_folder_out : str) -> None :
 
 
 def config_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--pose_dir", type=str, nargs='+',help="Path of the synthetic folder")
-    parser.add_argument("--out_dir", type=str, nargs='+',help="Path of the output rasters")
-    opt = parser.parse_args()
+    opt = parser().parse_args()
     return opt
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pose_dir", type=str, nargs='+', help="Path of the synthetic folder")
+    parser.add_argument("--out_dir", type=str, nargs='+', help="Path of the output rasters")
+    return parser
+
 
 def main():
     if not args.pose_dir or not args.out_dir :

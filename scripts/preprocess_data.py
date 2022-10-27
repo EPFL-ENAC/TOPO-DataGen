@@ -2,18 +2,12 @@ import os
 import argparse
 from config import settings
 from download_sample_data import get_list_files_from_directory, download_referenced_files
-
 from digital_surface_model_processing import digital_surface_model_merging, create_cesium_terrain_file,digital_surface_model_reprojection
 from points_cloud_processing import point_cloud_batch_colorization,point_cloud_batch_reprojection, \
     point_cloud_batch_downsampling,create_cesium_3d_tiles
 from orthophoto_processing import merge_orthophotos,orthophoto_reprojection,tile_orthophotos
 from utils.logger import create_logger_topo_datagen
 from files import zip_files_with_patter, has_csv_file,has_data_file
-
-
-
-
-
 
 
 def run_orthophoto_preprocessing(dataset : str,data_folder_path : str,  logger = None) -> str :
@@ -204,11 +198,17 @@ def run_data_preprocessing(dataset = 'demo',download : bool = True ) :
 
 
 def config_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("dataset", type=str, nargs='+',help="Name od the dataset")
-    parser.add_argument("-dataDownload", default=False, help="Download the data. If true, CSV file must exists. If false, data folder must exist", action='store_true')
-    opt = parser.parse_args()
+    opt = parser().parse_args()
     return opt
+
+
+def parser() :
+    parser = argparse.ArgumentParser()
+    parser.add_argument("dataset", type=str, nargs='+', help="Name od the dataset")
+    parser.add_argument("-dataDownload", default=False,
+                        help="Download the data. If true, CSV file must exists. If false, data folder must exist",
+                        action='store_true')
+    return parser
 
 
 
