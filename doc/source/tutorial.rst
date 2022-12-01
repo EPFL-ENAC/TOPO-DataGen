@@ -30,8 +30,19 @@ Create or make sure that the folder `demo` folder exits :
 |     ├── 📁 ...
 | ├── 📁 ...
 
+Step 2 : Start you conda environment
+--------------------------------------------
 
-Step 2 : Data downloading and preprocessing
+Activate you conda environment as follow :
+
+..  code-block:: bash
+
+    cd <your Topo-datagen folder>
+    conda activate topo-datagen
+
+
+
+Step 3 : Data downloading and preprocessing
 --------------------------------------------
 
 *Objective* : Prepare the data for the local and Cesium Ion processing. 
@@ -104,7 +115,7 @@ and run the following command to start the preprocessing (needed only if you add
 
 
 
-Step 3 : Data loading into Cesium Ion
+Step 4 : Data loading into Cesium Ion
 --------------------------------------
 
 *Objective* : Load the data into Cesium Ion and reference your token and AssetID
@@ -150,7 +161,7 @@ When uploading the .tif file, select the kind as raster terrain and choose base 
 
 
 
-Step 4 : Data Processing
+Step 5 : Data Processing
 --------------------------------------
 
 You can now start generating the synthetic images. In order to define the location of the poses, you can either use the position from the drone footage, or generate random positions (LHS).
@@ -249,7 +260,7 @@ With the scan_npy_pointcloud.py, we would delete the synthetic image with reproj
 
 
 
-Step 5 : Retrieve semantics
+Step 6 : Retrieve semantics
 --------------------------------------
 
 Please note that we retrieve the pixel-wise semantic label based on the classified point cloud and scene coordinate. For each pixel in the frame, the closest matching point in the classified point cloud is identified and its class is used as the label.
@@ -276,7 +287,7 @@ We highly recommend to first clean the data (last step) to remove the outliers o
 	CUDA device is preferred as the matrix computation could be much faster
 
 
-Step 6 : Create raster
+Step 7 : Create raster
 --------------------------------------
 
 The last step consist of creating the different products (scene coordiantes, Semantics map, Euclidean depth, Surface normals, ORB keypoints). 

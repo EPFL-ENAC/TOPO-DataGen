@@ -27,3 +27,4 @@ scripts/presets/demo*/
 */build/*
 
 presets/
+drone_data/
