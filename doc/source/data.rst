@@ -2,11 +2,7 @@ Data
 ====
 
 All georeferenced data (used as input or generated during the
-TOPO-DataGen process) are in `EPSG:4326 <https://epsg.io/4326>`__.
-
-The `tutorial <tutorial.md>`__ illustrates the reprojection of national
-coordinate system based data (swiss in this case) into global WG84
-EPSG:4326. This process can be adapted to use oher source data.
+TOPO-DataGen process) are in webmarcator `EPSG:3857 <https://epsg.io/3857>`__.
 
 Input data
 ----------
@@ -20,8 +16,7 @@ spatial density data are collected by airborne LiDAR.
 
 **Format** : las
 
-**Data sample** : `swiss example -
-swissSURFACE3D <https://www.swisstopo.admin.ch/en/geodata/height/surface3d.html>`__
+**Data sample** : `SURFACE3D demo <https://raw.githubusercontent.com/EPFL-ENAC/TOPO-DataGen/main/data_preprocess/demo/surface3d.csv>`__
 
 |image0|
 
@@ -37,8 +32,7 @@ exception of power lines and masts.
 
 **Format** : tif
 
-**Data sample** : `swiss example - swissSURFACE3D
-Raster <%5BswissSURFACE3D%20Raster%20-%20swisstopo%5D(https://www.swisstopo.admin.ch/en/geodata/height/surface3d-raster.html)>`__
+**Data sample** : `SURFACE3D Raster demo <https://raw.githubusercontent.com/EPFL-ENAC/TOPO-DataGen/main/data_preprocess/demo/surface3d-raster.csv>`__
 
 |image1|
 
@@ -51,8 +45,7 @@ Orthophoto mosaic
 
 **Format** : tif
 
-**Data sample** : `swiss example - SWISSIMAGE 10
-cm <https://www.swisstopo.admin.ch/en/geodata/images/ortho/swissimage10.html>`__\ 
+**Data sample** : `SWISSIMAGE 10cm demo <https://raw.githubusercontent.com/EPFL-ENAC/TOPO-DataGen/main/data_preprocess/demo/swissimage10.csv>`__\
 
 |image2|
 
@@ -81,7 +74,7 @@ Hypercube Sampling (LHS) method.
 
 **Format** : JEPG
 
-**Data sample** : to do
+**Data sample** : `done footage <https://zenodo.org/record/7251570/files/drone_footages.zip?download=1>`__
 
 |image3|
 
@@ -109,7 +102,7 @@ Scene coordinates
 
 **Description** : Pixel-wise scene coordinates
 
-**Format** : To be defined
+**Format** : png
 
 |image5|
 
@@ -121,7 +114,7 @@ Semantics label
 **Description** : Define the nature of each pixel based on the
 classified point cloud categories.
 
-**Format** : To be defined
+**Format** : png
 
 |image6|
 
@@ -134,7 +127,7 @@ Depth
 
 **Description** : Distance between the camera and the pixel
 
-**Format** : To be defined
+**Format** : png
 
 |image7|
 
@@ -147,7 +140,7 @@ Surface normal vector
 
 **Description** : Direction of the surface normal vector
 
-**Format** : To be defined
+**Format** : png
 
 |image8|
 
@@ -162,7 +155,7 @@ Surface normal vector
 be used to compare images and perform tasks such as image alignment and
 registration
 
-**Format** : To be defined
+**Format** : png
 
 |image9|
 

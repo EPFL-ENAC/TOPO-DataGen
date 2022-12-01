@@ -20,6 +20,7 @@ import shutil
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.join(os.path.abspath("../.."), "scripts"))
+sys.path.insert(0, os.path.join(os.path.abspath("../.."), "scripts","start_generate"))
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 
@@ -77,6 +78,6 @@ source_suffix = {
 
 # Packages / modules to mock so that build does not fail.
 for module in [
-    'pdal','laspy','osgeo','dynaconf'
+    'pdal','laspy','osgeo','dynaconf','pyDOE','pyproj','rasterio','progressbar','reframeTransform'
 ]:
     sys.modules[module] = mock.MagicMock()
