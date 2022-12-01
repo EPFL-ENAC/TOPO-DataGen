@@ -17,9 +17,13 @@ from typing import Union, Tuple
 import re
 from config import settings
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+SCRIPT_DIR = os.path.dirname(os.path.realpath('__file__'))
+print('SCRIPT_DIR',SCRIPT_DIR)
+
+
 USER_HOME = os.path.expanduser("~")
-PROJ_DIR = os.path.abspath(os.path.join(__file__, '../..'))
+PROJ_DIR = os.path.abspath(os.path.join('__file__', '../..'))
 sys.path.insert(0, PROJ_DIR)
 from reframeTransform import ReframeTransform
 
@@ -462,7 +466,7 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 
-def config_parser():
+def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("name", type=str, nargs='+',
                         help="Custom name of dataset(s) to generate. If several names are used, "
@@ -491,7 +495,13 @@ def config_parser():
                         help="To forcecully enable cuda feature to speed up rendering.")
     parser.add_argument("-cesiumhome", type=str, default=USER_HOME + '/Documents/Cesium',
                         help="Location of Cesium datasets home directory")
-    opt = parser.parse_args()
+
+    return parser
+
+
+def config_parser():
+
+    opt = parser().parse_args()
     return opt
 
 

@@ -204,7 +204,7 @@ def config_parser():
 
 def parser() :
     parser = argparse.ArgumentParser()
-    parser.add_argument("dataset", type=str, nargs='+', help="Name od the dataset")
+    parser.add_argument("dataset", type=str, nargs='+', help="Name of the dataset")
     parser.add_argument("-dataDownload", default=False,
                         help="Download the data. If true, CSV file must exists. If false, data folder must exist",
                         action='store_true')

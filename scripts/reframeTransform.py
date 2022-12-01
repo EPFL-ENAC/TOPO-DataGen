@@ -1,10 +1,8 @@
 import os
-import pdb
 import shutil
 import progressbar
 import jpype
 import jpype.imports
-from jpype.types import *
 import sys
 import argparse
 import numpy as np
@@ -12,8 +10,6 @@ import laspy
 import rasterio
 import pyproj
 from scipy import interpolate
-from tqdm import tqdm
-import time
 
 """
 This tool can be used as a script or the ReframeTransform class can be imported to use functions directly.
