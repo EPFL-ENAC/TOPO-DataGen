@@ -298,7 +298,7 @@ The last step consist of creating the different products (scene coordiantes, Sem
 	export OUT_CESIUM_DIR=<your_cesium_folder>
 	export SCENE=demo
 	export OUT_SYNTHETIC_DIR=$SCENE-LHS
-	export RASTER_DIR=$OUT_DIR/$SCENE-LHS-preview/
+	export RASTER_DIR=OUT_CESIUM_DIR/$SCENE-LHS-preview/
 	
 	python scripts/export_data.py --pose_dir $OUT_CESIUM_DIR/$OUT_SYNTHETIC_DIR --out_dir $RASTER_DIR
 
