@@ -12,7 +12,7 @@ Data downloading + preprocessing (EPSG:3857 - Web Mercator)
 Prepare the data for the local and Cesium Ion processing.
 
 .. argparse::
-   :filename: ../scripts/preprocess_data.py
+   :filename: ../../scripts/preprocess_data.py
    :func: parser
    :prog: python scripts/preprocess_data.py
 
@@ -42,7 +42,7 @@ Tasks to do before running this processing :
 
 
 .. argparse::
-   :filename: ../scripts/start_generate.py
+   :filename: ../../scripts/start_generate.py
    :func: parser
    :prog: python scripts/start_generate.py
 
@@ -56,7 +56,7 @@ Create rasters final products
 Create the different products (scene coordiantes, Semantics map, Euclidean depth, Surface normals, ORB keypoints).
 
 .. argparse::
-   :filename: ../scripts/export_data.py
+   :filename: ../../scripts/export_data.py
    :func: parser
    :prog: python scripts/export_data.py
 

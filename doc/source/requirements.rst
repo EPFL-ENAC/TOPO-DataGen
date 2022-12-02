@@ -128,3 +128,21 @@ If conda is not installed,  `check this page <https://phoenixnap.com/kb/how-to-i
 
 
 
+Get Started
+--------------------
+
+
+Once the above elements are ready, the dependencies can be installed as follow :
+
+.. code-block::
+
+    sudo bash setup/install.sh
+
+
+And conda environment :
+
+.. code-block::
+
+    conda env create -f setup/environment.yml
+    conda activate topo-datagen
+
